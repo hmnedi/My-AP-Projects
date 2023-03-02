@@ -6,7 +6,8 @@ import java.util.Random;
 
 public class Game {
     int n = 19, iPos, jPos;
-    Border selectionBorder = BorderFactory.createLineBorder(new Color(0x544633), 2);
+    Border selectionBorder = BorderFactory.createLineBorder(new Color(0x544633), 2),
+            removeBorder = BorderFactory.createEmptyBorder();
     JPanel frame, panelTopNavigationBar, panelMid;
     JLabel[][] lblNumbers;
     Action upAaction, downAction, leftAction, rightAction, upRightAction,
@@ -47,7 +48,7 @@ public class Game {
                 holdColor[i][j] = randomColors[rand.nextInt(8)];
                 lblNumbers[i][j].setBackground(holdColor[i][j]);
                 lblNumbers[i][j].setHorizontalTextPosition(SwingConstants.CENTER);
-                lblNumbers[i][j].setVerticalAlignment(SwingConstants.CENTER);
+                lblNumbers[i][j].setVerticalTextPosition(SwingConstants.CENTER);
                 lblNumbers[i][j].setOpaque(true);
                 panelMid.add(lblNumbers[i][j]);
             }
@@ -101,22 +102,94 @@ public class Game {
 
         panelMid.setVisible(true);
         frame.setVisible(true);
+
+        showHighLight();
+    }
+
+    private void showHighLight() {
+
+        // w - up
+        if ((iPos - 1 >= 0) && (!lblNumbers[iPos-1][jPos].getText().equals("")) && (iPos - Integer.valueOf(lblNumbers[iPos-1][jPos].getText()) >= 0)) {
+            for (int i=0; i<Integer.valueOf(lblNumbers[iPos-1][jPos].getText()); i++){
+                lblNumbers[iPos-1-i][jPos].setBorder(selectionBorder);
+            }
+        }
+
+        // s - down
+        if ((iPos + 1 < n) && (!lblNumbers[iPos+1][jPos].getText().equals("")) && (iPos + Integer.valueOf(lblNumbers[iPos+1][jPos].getText()) < n)) {
+            for (int i=0; i<Integer.valueOf(lblNumbers[iPos+1][jPos].getText()); i++){
+                lblNumbers[iPos+1+i][jPos].setBorder(selectionBorder);
+            }
+        }
+
+        // a - left
+        if ((jPos - 1 >= 0) && (!lblNumbers[iPos][jPos-1].getText().equals("")) && (jPos - Integer.valueOf(lblNumbers[iPos][jPos-1].getText()) >= 0)) {
+            for (int i=0; i<Integer.valueOf(lblNumbers[iPos][jPos-1].getText()); i++){
+                lblNumbers[iPos][jPos-1-i].setBorder(selectionBorder);
+            }
+        }
+
+        // e - up right
+        if ((iPos - 1 >= 0) && (jPos + 1 < 3*n) && (!lblNumbers[iPos-1][jPos+1].getText().equals("")) && (iPos - Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText()) >= 0) && (jPos + Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText()) < 3*n)) {
+            for (int i=0; i<Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText()); i++){
+                lblNumbers[iPos-1-i][jPos+1+i].setBorder(selectionBorder);
+            }
+        }
+    }
+
+    private void clearHighLights() {
+        for(int i=0; i<n; i++)
+            for(int j=0; j<3*n; j++)
+                lblNumbers[i][j].setBorder(removeBorder);
+    }
+
+    private void changePlayerPos(int i, int j) {
+        lblNumbers[iPos][jPos].setIcon(null);
+        lblNumbers[iPos][jPos].setBackground(Color.WHITE);
+
+        clearHighLights();
+
+        iPos = i;
+        jPos = j;
+
+        lblNumbers[iPos][jPos].setBorder(selectionBorder);
+        lblNumbers[iPos][jPos].setIcon(new ImageIcon("pic/straw1.png"));
+        lblNumbers[iPos][jPos].setBackground(new Color(0xe8e6e3));
+        lblNumbers[iPos][jPos].setHorizontalAlignment(SwingConstants.CENTER);
+        lblNumbers[iPos][jPos].setVerticalAlignment(SwingConstants.CENTER);
     }
 
     public class UpAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-            //label.setLocation(label.getX(), label.getY()-10);
-            System.out.println("hee");
-            lblNumbers[iPos-1][jPos].setBorder(selectionBorder);
+            System.out.println("w");
+            if (iPos - 1 >= 0 && lblNumbers[iPos-1][jPos].getBorder() == selectionBorder){
+                int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos].getText());
+                for (int i=0; i<tmp; i++){
+                    lblNumbers[iPos-1-i][jPos].setText("");
+                    lblNumbers[iPos-1-i][jPos].setIcon(null);
+                    lblNumbers[iPos-1-i][jPos].setBackground(Color.WHITE);
+                }
+                changePlayerPos(iPos - tmp, jPos);
+                showHighLight();
+            }
         }
     }
 
     public class DownAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-//            label.setLocation(label.getX(), label.getY()+10);
-            System.out.println("hee");
+            System.out.println("s");
+            if (iPos + 1 < n && lblNumbers[iPos+1][jPos].getBorder() == selectionBorder){
+                int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos].getText());
+                for (int i=0; i<tmp; i++){
+                    lblNumbers[iPos+1+i][jPos].setText("");
+                    lblNumbers[iPos+1+i][jPos].setIcon(null);
+                    lblNumbers[iPos+1+i][jPos].setBackground(Color.WHITE);
+                }
+                changePlayerPos(iPos + tmp, jPos);
+                showHighLight();
+            }
 
         }
     }
@@ -124,9 +197,17 @@ public class Game {
     public class LeftAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-//            label.setLocation(label.getX()-10, label.getY());
-            System.out.println("hee");
-
+            System.out.println("a");
+            if (jPos - 1 >= 0 && lblNumbers[iPos][jPos-1].getBorder() == selectionBorder){
+                int tmp = Integer.valueOf(lblNumbers[iPos][jPos-1].getText());
+                for (int i=0; i<tmp; i++){
+                    lblNumbers[iPos][jPos-1-i].setText("");
+                    lblNumbers[iPos][jPos-1-i].setIcon(null);
+                    lblNumbers[iPos][jPos-1-i].setBackground(Color.WHITE);
+                }
+                changePlayerPos(iPos, jPos - tmp);
+                showHighLight();
+            }
         }
     }
 
@@ -174,6 +255,8 @@ public class Game {
 
         }
     }
+
+
 
 
 }
