@@ -2,17 +2,36 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 
-public class Game {
-    int n = 19, iPos, jPos;
+public class Game implements ActionListener {
+    int n = 19, iPos, jPos, score=0;
     Border selectionBorder = BorderFactory.createLineBorder(new Color(0x544633), 2);
     JPanel frame, panelTopNavigationBar, panelMid;
+    public static JLabel lblTimer;
+    JLabel lblScore;
     JLabel[][] lblNumbers;
+    JTextField txtUsername;
+    JButton btnSaveUserName, btnQuit;
     Action upAaction, downAction, leftAction, rightAction, upRightAction,
             upLeftAction, downRightAction, downLeftAction;
+    public static StopWatch timer;
 
     public Game() {
+        // get n value
+        setValueOfN();
+
+        // start timer
+        timer = new StopWatch();
+
         frame = new JPanel();
         panelMid = new JPanel();
         panelTopNavigationBar = new JPanel();
@@ -24,12 +43,62 @@ public class Game {
 
         panelTopNavigationBar.setPreferredSize(new Dimension(100, 50));
         panelTopNavigationBar.setBackground(new Color(0xf7e4c8));
+        panelTopNavigationBar.setLayout(null);
+
+        lblScore = new JLabel("Score: 0");
+        lblScore.setBounds(20, 5, 300, 40);
+        lblScore.setFont(new Font("Inkpen2 Script Std", Font.PLAIN, 32));
+        lblScore.setBackground(null);
+        lblScore.setForeground(new Color(0x544633));
+
+        txtUsername = new JTextField(" username...");
+        txtUsername.setBounds(820, 5, 200, 40);
+        txtUsername.setFont(new Font("Inkpen2 Script Std", Font.PLAIN, 32));
+        txtUsername.setForeground(new Color(0x707070));
+        txtUsername.setBackground(null);
+        txtUsername.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+                // so it works only with the first mouse click
+                if (txtUsername.getText().equals(" username...")){
+                    txtUsername.setText("");
+                    txtUsername.setForeground(new Color(0x544633));
+                }
+            }
+        });
+        btnSaveUserName = new JButton("save");
+        btnSaveUserName.setBounds(740, 18, 70, 25);
+        btnSaveUserName.setFont(new Font("Inkpen2 Script Std", Font.PLAIN, 22));
+        btnSaveUserName.setForeground(new Color(0x595959));
+        btnSaveUserName.setBackground(new Color(0xF1D7BD));
+        btnSaveUserName.addActionListener(this);
+        btnSaveUserName.setFocusable(false);
+
+        lblTimer = new JLabel("00:00");
+        lblTimer.setBounds(500, 18, 70, 25);
+        lblTimer.setFont(new Font("Inkpen2 Script Std", Font.PLAIN, 22));
+        lblTimer.setForeground(new Color(0x544633));
+        lblTimer.setBackground(null);
+        lblTimer.setOpaque(true);
+
+        btnQuit = new JButton("quit");
+        btnQuit.setBounds(145, 15, 70, 25);
+        btnQuit.setFont(new Font("Inkpen2 Script Std", Font.PLAIN, 22));
+        btnQuit.setForeground(new Color(0x595959));
+        btnQuit.setBackground(new Color(0xF1D7BD));
+        btnQuit.addActionListener(this);
+        btnQuit.setFocusable(false);
+
+        panelTopNavigationBar.add(btnQuit);
+        panelTopNavigationBar.add(lblTimer);
+        panelTopNavigationBar.add(lblScore);
+        panelTopNavigationBar.add(txtUsername);
+        panelTopNavigationBar.add(btnSaveUserName);
 
         // multi panel
         frame.setLayout(new BorderLayout());
         frame.add(panelTopNavigationBar, BorderLayout.NORTH);
         frame.add(panelMid, BorderLayout.CENTER);
-
 
         lblNumbers = new JLabel[n][3*n]; // todo: change 19 to n and set it from the setting page remove the shakes
         ImageIcon cup = new ImageIcon("pic/cup1.png");
@@ -103,6 +172,25 @@ public class Game {
         frame.setVisible(true);
 
         showHighLight();
+    }
+
+    private void setValueOfN() {
+        // read file and load n
+        String data = "";
+        try {
+            File Obj = new File("logs/valueOfN.gametxt");
+            Scanner Reader = new Scanner(Obj);
+
+            while (Reader.hasNextLine()) {
+                data = Reader.nextLine();
+            }
+            Reader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("An error has occurred.");
+            e.printStackTrace();
+        }
+        n = Integer.parseInt(data);
     }
 
     private void showHighLight() {
@@ -186,6 +274,68 @@ public class Game {
         lblNumbers[iPos][jPos].setVerticalAlignment(SwingConstants.CENTER);
     }
 
+    private void isFinish() {
+        boolean l = true, r = true, u = true, d = true, ur =true, ul =true, dr = true, dl = true;
+        if (iPos + 1 >= n || (lblNumbers[iPos+1][jPos].getBorder() != selectionBorder)) d = false;
+        if (iPos - 1 < 0 || (lblNumbers[iPos-1][jPos].getBorder() != selectionBorder)) u = false;
+        if (jPos + 1 >= n*3 || (lblNumbers[iPos][jPos+1].getBorder() != selectionBorder)) r = false;
+        if (jPos - 1 < 0 || (lblNumbers[iPos][jPos-1].getBorder() != selectionBorder)) l = false;
+        if ((jPos + 1 >= n*3 || iPos - 1 < 0) || (lblNumbers[iPos-1][jPos+1].getBorder() != selectionBorder)) ur = false;
+        if ((jPos - 1 < 0 || iPos - 1 < 0) || (lblNumbers[iPos-1][jPos-1].getBorder() != selectionBorder)) ul = false;
+        if ((jPos + 1 >= n*3 || iPos + 1 >= n) || (lblNumbers[iPos+1][jPos+1].getBorder() != selectionBorder)) dr = false;
+        if ((jPos - 1 < 0 || iPos + 1 >= n) || (lblNumbers[iPos+1][jPos-1].getBorder() != selectionBorder)) dl = false;
+
+        if (score == n*n*3) {
+            JOptionPane.showMessageDialog(null, "", "You won",
+                    JOptionPane.PLAIN_MESSAGE,new ImageIcon("pic/youwonpic.jpg"));
+            System.out.println("You Won");
+            saveRecordAsFile();
+            timer.stop();
+        }
+        else if (!l && !r && !u && !d && !ur && !ul && !dr && !dl){
+            JOptionPane.showMessageDialog(null, "", "You Lost",
+                    JOptionPane.PLAIN_MESSAGE,new ImageIcon("pic/youlostpic.jpg"));
+            System.out.println("You Lost");
+            saveRecordAsFile();
+            timer.stop();
+        }
+    }
+
+    private void saveRecordAsFile() {
+        try {
+            FileWriter Writer = new FileWriter("logs/history.gametxt", true);
+            Writer.write(txtUsername.getText() + " scoerd: " + score + " on " + lblTimer.getText() +
+                    " time with " + n + "*" + (n*3) + " table");
+            Writer.close();
+            System.out.println("Successfully written.");
+        }
+        catch (IOException e) {
+            System.out.println("An error has occurred.");
+            e.printStackTrace();
+        }
+    }
+
+    private void addScore() {
+        score++;
+        lblScore.setText("Score: " + score);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == btnSaveUserName) {
+            txtUsername.setFocusable(false);
+            btnSaveUserName.setEnabled(false);
+        }
+        else if (e.getSource() == btnQuit) {
+            frame.setVisible(false);
+            // reset everything in this frame
+            //todo stop watch
+
+            CardLaout crd =new CardLaout();
+            crd.cardLayout.previous(crd.container);
+        }
+    }
+
     public class UpAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -193,12 +343,15 @@ public class Game {
             if (iPos - 1 >= 0 && lblNumbers[iPos-1][jPos].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos-1-i][jPos].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos-1-i][jPos].setText("");
                     lblNumbers[iPos-1-i][jPos].setIcon(null);
                     lblNumbers[iPos-1-i][jPos].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos - tmp, jPos);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -210,12 +363,15 @@ public class Game {
             if (iPos + 1 < n && lblNumbers[iPos+1][jPos].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos+1+i][jPos].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos+1+i][jPos].setText("");
                     lblNumbers[iPos+1+i][jPos].setIcon(null);
                     lblNumbers[iPos+1+i][jPos].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos + tmp, jPos);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -227,12 +383,15 @@ public class Game {
             if (jPos - 1 >= 0 && lblNumbers[iPos][jPos-1].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos][jPos-1].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos][jPos-1-i].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos][jPos-1-i].setText("");
                     lblNumbers[iPos][jPos-1-i].setIcon(null);
                     lblNumbers[iPos][jPos-1-i].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos, jPos - tmp);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -244,12 +403,15 @@ public class Game {
             if (jPos + 1 < 3*n && lblNumbers[iPos][jPos+1].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos][jPos+1].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos][jPos+1+i].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos][jPos+1+i].setText("");
                     lblNumbers[iPos][jPos+1+i].setIcon(null);
                     lblNumbers[iPos][jPos+1+i].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos, jPos + tmp);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -261,12 +423,15 @@ public class Game {
             if (iPos - 1 >= 0 && jPos + 1 < 3*n && lblNumbers[iPos-1][jPos+1].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos-1-i][jPos+1+i].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos-1-i][jPos+1+i].setText("");
                     lblNumbers[iPos-1-i][jPos+1+i].setIcon(null);
                     lblNumbers[iPos-1-i][jPos+1+i].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos - tmp, jPos + tmp);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -278,12 +443,15 @@ public class Game {
             if (iPos - 1 >= 0 && jPos - 1 >= 0 && lblNumbers[iPos-1][jPos-1].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos-1].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos-1-i][jPos-1-i].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos-1-i][jPos-1-i].setText("");
                     lblNumbers[iPos-1-i][jPos-1-i].setIcon(null);
                     lblNumbers[iPos-1-i][jPos-1-i].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos - tmp, jPos - tmp);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -295,12 +463,15 @@ public class Game {
             if (iPos + 1 < n && jPos + 1 < 3*n && lblNumbers[iPos+1][jPos+1].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos+1].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos+1+i][jPos+1+i].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos+1+i][jPos+1+i].setText("");
                     lblNumbers[iPos+1+i][jPos+1+i].setIcon(null);
                     lblNumbers[iPos+1+i][jPos+1+i].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos + tmp, jPos + tmp);
                 showHighLight();
+                isFinish();
             }
         }
     }
@@ -312,13 +483,17 @@ public class Game {
             if (iPos + 1 < n && jPos - 1 >= 0 && lblNumbers[iPos+1][jPos-1].getBorder() == selectionBorder){
                 int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos-1].getText());
                 for (int i=0; i<tmp; i++){
+                    if (lblNumbers[iPos+1+i][jPos-1-i].getBackground() != Color.WHITE) addScore();
+
                     lblNumbers[iPos+1+i][jPos-1-i].setText("");
                     lblNumbers[iPos+1+i][jPos-1-i].setIcon(null);
                     lblNumbers[iPos+1+i][jPos-1-i].setBackground(Color.WHITE);
                 }
                 changePlayerPos(iPos + tmp, jPos - tmp);
                 showHighLight();
+                isFinish();
             }
         }
     }
+
 }
