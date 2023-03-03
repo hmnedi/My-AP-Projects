@@ -196,57 +196,57 @@ public class Game implements ActionListener {
     private void showHighLight() {
 
         // w - up
-        if ((iPos - 1 >= 0) && (!lblNumbers[iPos-1][jPos].getText().equals("")) && (iPos - Integer.valueOf(lblNumbers[iPos-1][jPos].getText()) >= 0)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos-1][jPos].getText()); i++){
+        if ((iPos - 1 >= 0) && (!lblNumbers[iPos-1][jPos].getText().equals("")) && (iPos - Integer.parseInt(lblNumbers[iPos-1][jPos].getText()) >= 0)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos-1][jPos].getText()); i++){
                 lblNumbers[iPos-1-i][jPos].setBorder(selectionBorder);
             }
         }
 
         // s - down
-        if ((iPos + 1 < n) && (!lblNumbers[iPos+1][jPos].getText().equals("")) && (iPos + Integer.valueOf(lblNumbers[iPos+1][jPos].getText()) < n)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos+1][jPos].getText()); i++){
+        if ((iPos + 1 < n) && (!lblNumbers[iPos+1][jPos].getText().equals("")) && (iPos + Integer.parseInt(lblNumbers[iPos+1][jPos].getText()) < n)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos+1][jPos].getText()); i++){
                 lblNumbers[iPos+1+i][jPos].setBorder(selectionBorder);
             }
         }
 
         // a - left
-        if ((jPos - 1 >= 0) && (!lblNumbers[iPos][jPos-1].getText().equals("")) && (jPos - Integer.valueOf(lblNumbers[iPos][jPos-1].getText()) >= 0)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos][jPos-1].getText()); i++){
+        if ((jPos - 1 >= 0) && (!lblNumbers[iPos][jPos-1].getText().equals("")) && (jPos - Integer.parseInt(lblNumbers[iPos][jPos-1].getText()) >= 0)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos][jPos-1].getText()); i++){
                 lblNumbers[iPos][jPos-1-i].setBorder(selectionBorder);
             }
         }
 
         // d - right
-        if ((jPos + 1 < 3*n) && (!lblNumbers[iPos][jPos+1].getText().equals("")) && (jPos + Integer.valueOf(lblNumbers[iPos][jPos+1].getText()) < 3*n)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos][jPos+1].getText()); i++){
+        if ((jPos + 1 < 3*n) && (!lblNumbers[iPos][jPos+1].getText().equals("")) && (jPos + Integer.parseInt(lblNumbers[iPos][jPos+1].getText()) < 3*n)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos][jPos+1].getText()); i++){
                 lblNumbers[iPos][jPos+1+i].setBorder(selectionBorder);
             }
         }
 
         // e - up right
-        if ((iPos - 1 >= 0) && (jPos + 1 < 3*n) && (!lblNumbers[iPos-1][jPos+1].getText().equals("")) && (iPos - Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText()) >= 0) && (jPos + Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText()) < 3*n)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText()); i++){
+        if ((iPos - 1 >= 0) && (jPos + 1 < 3*n) && (!lblNumbers[iPos-1][jPos+1].getText().equals("")) && (iPos - Integer.parseInt(lblNumbers[iPos-1][jPos+1].getText()) >= 0) && (jPos + Integer.parseInt(lblNumbers[iPos-1][jPos+1].getText()) < 3*n)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos-1][jPos+1].getText()); i++){
                 lblNumbers[iPos-1-i][jPos+1+i].setBorder(selectionBorder);
             }
         }
 
         // q - up left
-        if ((iPos - 1 >= 0) && (jPos - 1 >= 0) && (!lblNumbers[iPos-1][jPos-1].getText().equals("")) && (iPos - Integer.valueOf(lblNumbers[iPos-1][jPos-1].getText()) >= 0) && (jPos - Integer.valueOf(lblNumbers[iPos-1][jPos-1].getText()) >= 0)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos-1][jPos-1].getText()); i++){
+        if ((iPos - 1 >= 0) && (jPos - 1 >= 0) && (!lblNumbers[iPos-1][jPos-1].getText().equals("")) && (iPos - Integer.parseInt(lblNumbers[iPos-1][jPos-1].getText()) >= 0) && (jPos - Integer.parseInt(lblNumbers[iPos-1][jPos-1].getText()) >= 0)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos-1][jPos-1].getText()); i++){
                 lblNumbers[iPos-1-i][jPos-1-i].setBorder(selectionBorder);
             }
         }
 
         // c - down right
-        if ((iPos + 1 < n) && (jPos + 1 < 3*n) && (!lblNumbers[iPos+1][jPos+1].getText().equals("")) && (iPos + Integer.valueOf(lblNumbers[iPos+1][jPos+1].getText()) < n) && (jPos + Integer.valueOf(lblNumbers[iPos+1][jPos+1].getText()) < 3*n)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos+1][jPos+1].getText()); i++){
+        if ((iPos + 1 < n) && (jPos + 1 < 3*n) && (!lblNumbers[iPos+1][jPos+1].getText().equals("")) && (iPos + Integer.parseInt(lblNumbers[iPos+1][jPos+1].getText()) < n) && (jPos + Integer.parseInt(lblNumbers[iPos+1][jPos+1].getText()) < 3*n)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos+1][jPos+1].getText()); i++){
                 lblNumbers[iPos+1+i][jPos+1+i].setBorder(selectionBorder);
             }
         }
 
         // z - down left
-        if ((iPos + 1 < n) && (jPos - 1 >= 0) && (!lblNumbers[iPos+1][jPos-1].getText().equals("")) && (iPos + Integer.valueOf(lblNumbers[iPos+1][jPos-1].getText()) < n) && (jPos - Integer.valueOf(lblNumbers[iPos+1][jPos-1].getText()) >= 0)) {
-            for (int i=0; i<Integer.valueOf(lblNumbers[iPos+1][jPos-1].getText()); i++){
+        if ((iPos + 1 < n) && (jPos - 1 >= 0) && (!lblNumbers[iPos+1][jPos-1].getText().equals("")) && (iPos + Integer.parseInt(lblNumbers[iPos+1][jPos-1].getText()) < n) && (jPos - Integer.parseInt(lblNumbers[iPos+1][jPos-1].getText()) >= 0)) {
+            for (int i = 0; i<Integer.parseInt(lblNumbers[iPos+1][jPos-1].getText()); i++){
                 lblNumbers[iPos+1+i][jPos-1-i].setBorder(selectionBorder);
             }
         }
@@ -341,7 +341,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("w");
             if (iPos - 1 >= 0 && lblNumbers[iPos-1][jPos].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos-1][jPos].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos-1-i][jPos].getBackground() != Color.WHITE) addScore();
 
@@ -361,7 +361,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("s");
             if (iPos + 1 < n && lblNumbers[iPos+1][jPos].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos+1][jPos].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos+1+i][jPos].getBackground() != Color.WHITE) addScore();
 
@@ -381,7 +381,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("a");
             if (jPos - 1 >= 0 && lblNumbers[iPos][jPos-1].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos][jPos-1].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos][jPos-1].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos][jPos-1-i].getBackground() != Color.WHITE) addScore();
 
@@ -401,7 +401,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("d");
             if (jPos + 1 < 3*n && lblNumbers[iPos][jPos+1].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos][jPos+1].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos][jPos+1].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos][jPos+1+i].getBackground() != Color.WHITE) addScore();
 
@@ -421,7 +421,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("e");
             if (iPos - 1 >= 0 && jPos + 1 < 3*n && lblNumbers[iPos-1][jPos+1].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos+1].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos-1][jPos+1].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos-1-i][jPos+1+i].getBackground() != Color.WHITE) addScore();
 
@@ -441,7 +441,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("q");
             if (iPos - 1 >= 0 && jPos - 1 >= 0 && lblNumbers[iPos-1][jPos-1].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos-1][jPos-1].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos-1][jPos-1].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos-1-i][jPos-1-i].getBackground() != Color.WHITE) addScore();
 
@@ -461,7 +461,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("c");
             if (iPos + 1 < n && jPos + 1 < 3*n && lblNumbers[iPos+1][jPos+1].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos+1].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos+1][jPos+1].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos+1+i][jPos+1+i].getBackground() != Color.WHITE) addScore();
 
@@ -481,7 +481,7 @@ public class Game implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.out.println("z");
             if (iPos + 1 < n && jPos - 1 >= 0 && lblNumbers[iPos+1][jPos-1].getBorder() == selectionBorder){
-                int tmp = Integer.valueOf(lblNumbers[iPos+1][jPos-1].getText());
+                int tmp = Integer.parseInt(lblNumbers[iPos+1][jPos-1].getText());
                 for (int i=0; i<tmp; i++){
                     if (lblNumbers[iPos+1+i][jPos-1-i].getBackground() != Color.WHITE) addScore();
 
