@@ -250,11 +250,17 @@ public class SqlCode {
             if (!isOperator(token)) {
                 result = ops(token, values, tableColumns);
             }
-            else {
-                // else if token.equals("AND")
+            else if (token.equals("AND") || token.equals("OR")){
                 String n2 = stack.pop();
                 String n1 = stack.pop();
                 result = ops(n1, n2, token, values, tableColumns);
+            }
+            else if (token.equals("NOT")){
+                String n = stack.pop();
+                result = ops (n, token, values, tableColumns);
+            }
+            else {
+                result = "";
             }
 
             stack.push(result);
@@ -263,6 +269,13 @@ public class SqlCode {
         return stack.peek().equals("true");
     }
 
+
+    private String ops(String n, String operation, String[] values, String[] tableColumns) {
+        if (operation.equals("NOT")) {
+            return String.valueOf(!n.equals("true"));
+        }
+        return "";
+    }
 
     private String ops(String token, String[] values, String[] tableColumns) {
         String[] splited = token.split("=");
@@ -278,8 +291,6 @@ public class SqlCode {
         else if (operation.equals("OR")){
             return String.valueOf(n1.equals("true") || n2.equals("true"));
         }
-        // todo: another overloading for the NOT LIKE REGEX commands
-
         return "";
     }
 
