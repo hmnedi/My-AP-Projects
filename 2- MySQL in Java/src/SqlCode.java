@@ -57,7 +57,9 @@ public class SqlCode {
 
     private void Select() throws IOException {
         String tableName = query.substring(query.indexOf("FROM")+4).strip().split(" ")[0];
-        tableName = tableName.substring(0, tableName.length()-1);
+        if (tableName.charAt(tableName.length()-1) == ';') {
+            tableName = tableName.substring(0, tableName.length()-1);
+        }
         File tableFile = new File("tables/" + tableName + ".txt");
         String[] queryColumns = commaSplitter(query.substring(6, query.indexOf("FROM")));
         String[] tableColumns = getTableColumns(tableName);
@@ -93,9 +95,19 @@ public class SqlCode {
         while (scanner.hasNextLine()){
             Vector<String> rows = new Vector<>();
             String[] values = scanner.nextLine().split("\\|");
+
+            // so if I split id||name|| it gives me [id, , name, , ]. I could probably save as file in a better format
+            if (values.length != tableColumns.length) {
+                values = Arrays.copyOf(values, tableColumns.length);
+                for (int i=0; i<values.length; i++) {
+                    if (values[i] == null){
+                        values[i] = "";
+                    }
+                }
+            }
+
             // store columns in rows
             if (hasStar){
-                //todo check this line
                 Collections.addAll(rows, values);
             }
             else {
@@ -108,35 +120,25 @@ public class SqlCode {
 
             // WHERE
             if (query.contains(" WHERE ")) {
-                for (int i=0; i<rows.size(); i++){
-                    if (findWhere(values, tableColumns, query.substring(query.indexOf(" WHERE ")+7))){
-                        System.out.print(rows); //todo: print it legit
-                    }
+                if (evaluatePostfix(
+                        infixToPostfix(parseIntoInfix(query.substring(query.indexOf(" WHERE ")+7))),
+                        values, tableColumns)) {
+                    System.out.println(rows);
                 }
             }
             else {
-                System.out.print(rows);
+                System.out.println(rows);
             }
-            System.out.println();
         }
 
     }
 
-    private boolean findWhere(String[] values, String[] tableColumns,String condition){
-        return true;
-//        "city='rasht'";
-//        if (values[Arrays.asList(tableColumns).indexOf("city")].equals("rasht")){
-//
-//        }
-
-    }
-
-    private static Vector<String> parseIntoInfix(String s){
+    private Stack<String> parseIntoInfix(String s){
         Stack<String> infix = new Stack<>();
 
         int i = 0;
         while (i < s.length()){
-            if (s.startsWith(" AND ", i)){
+            if (s.startsWith("AND ", i)){
                 infix.push("AND");
                 i += 3;
             }
@@ -144,7 +146,7 @@ public class SqlCode {
                 infix.push("NOT");
                 i += 3;
             }
-            else if (s.startsWith(" OR ", i)){
+            else if (s.startsWith("OR ", i)){
                 infix.push("OR");
                 i += 2;
             }
@@ -154,23 +156,130 @@ public class SqlCode {
             else if (s.charAt(i) == ')'){
                 infix.push(")");
             }
+            else if (s.charAt(i) == ';'){
+                break;
+            }
             else if (s.charAt(i) != ' ') {
                 String tmp = "";
-                boolean flag = false;
-                while (s.charAt(i) != '\'' || !flag) {
-                    if (s.charAt(i) == '\'') flag = true;
+                // before the =
+                while (s.charAt(i) != '=') {
                     if (s.charAt(i) != ' ') tmp += s.charAt(i);
-                    if (s.charAt(i) == ';') break;
                     i++;
                 }
-                tmp += '\'';
+                tmp += s.charAt(i);
+                i++;
+
+                // skip the spaces
+                while (s.charAt(i) == ' ') i++;
+
+                // if it's digit, id=2
+                if (Character.isDigit(s.charAt(i))) {
+                    while (Character.isDigit(s.charAt(i))) {
+                        tmp += s.charAt(i);
+                        i++;
+                    }
+                }
+                else{
+                    // id it's string, firstname='hooman'
+                    boolean flag = false;
+                    while (s.charAt(i) != '\'' || !flag){
+                        if (s.charAt(i) == '\'') flag = true;
+                        if (s.charAt(i) != ' ') tmp += s.charAt(i);
+                        if (s.charAt(i) == ';') break;
+                        i++;
+                    }
+                    tmp += '\'';
+                }
+
                 infix.push(tmp);
             }
             i++;
         }
 
-        infix.pop();
+        //infix.pop();
         return infix;
+    }
+
+    private Stack<String> infixToPostfix (Stack<String> infix) {
+        Stack<String> postfix = new Stack<>(), stack = new Stack<>();
+        HashMap<String, Integer> priority = new HashMap<String, Integer>();
+        priority.put("(", -1);
+        priority.put("AND", 0);
+        priority.put("OR", 0);
+        priority.put("NOT", 1);
+
+        for (String token: infix) {
+            if (token.equals("(")) {
+                stack.push(token);
+            }
+            else if (token.equals(")")) {
+                while (!stack.peek().equals("(")) {
+                    postfix.push(stack.pop());
+                }
+                stack.pop();
+            }
+            else if (!isOperator(token)) {
+                postfix.push(token);
+            }
+            else {
+                while (!stack.isEmpty() && priority.get(stack.peek()) >= priority.get(token)) {
+                    postfix.push(stack.pop());
+                }
+                stack.push(token);
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            postfix.push(stack.pop());
+        }
+
+        return postfix;
+    }
+
+    private boolean evaluatePostfix (Stack<String> tokens, String[] values, String[] tableColumns) {
+        Stack<String> stack = new Stack<>();
+
+        for (String token: tokens) {
+            String result;
+            if (!isOperator(token)) {
+                result = ops(token, values, tableColumns);
+            }
+            else {
+                String n2 = stack.pop();
+                String n1 = stack.pop();
+                result = ops(n1, n2, token, values, tableColumns);
+            }
+
+            stack.push(result);
+        }
+
+        return stack.peek().equals("true");
+    }
+
+
+    private String ops(String token, String[] values, String[] tableColumns) {
+        String[] splited = token.split("=");
+        splited[1] = deleteQuotation(splited[1]);
+
+        return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].equals(splited[1]));
+    }
+
+    private String ops(String n1, String n2, String operation, String[] values, String[] tableColumns) {
+        if (operation.equals("AND")) {
+            return String.valueOf(n1.equals("true") && n2.equals("true"));
+        }
+        return "";
+    }
+
+    private String deleteQuotation(String s) {
+        if (s.charAt(0) == '\'' && s.charAt(s.length()-1) == '\'') {
+            return s.substring(1, s.length()-1);
+        }
+        return s;
+    }
+
+    private boolean isOperator(String token) {
+        return token.equals("AND") || token.equals("OR") || token.equals("NOT");
     }
 
     private void runDleteTable() {
@@ -201,6 +310,7 @@ public class SqlCode {
         String[] ret = str.split(",");
         for (int i=0; i<ret.length; i++){
             ret[i] = ret[i].strip();
+            ret[i] = deleteQuotation(ret[i]);
         }
         return ret;
     }
