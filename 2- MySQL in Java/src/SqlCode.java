@@ -30,6 +30,7 @@ public class SqlCode {
 
 
 
+
     }
 
     private void InsertInto() throws IOException {
@@ -176,7 +177,8 @@ public class SqlCode {
                 if (Character.isDigit(s.charAt(i))) {
                     while (Character.isDigit(s.charAt(i))) {
                         tmp += s.charAt(i);
-                        i++;
+                        if (Character.isDigit(s.charAt(i+1))) i++;
+                        else break;
                     }
                 }
                 else{
@@ -184,8 +186,12 @@ public class SqlCode {
                     boolean flag = false;
                     while (s.charAt(i) != '\'' || !flag){
                         if (s.charAt(i) == '\'') flag = true;
-                        if (s.charAt(i) != ' ') tmp += s.charAt(i);
-                        if (s.charAt(i) == ';') break;
+                        if (s.charAt(i) == '\\' && s.charAt(i+1) == '\''){
+                            tmp += '\'';
+                            i++;
+                        }
+                        else if (s.charAt(i) != ' ') tmp += s.charAt(i);
+                        else if (s.charAt(i) == ';') break;
                         i++;
                     }
                     tmp += '\'';
@@ -245,6 +251,7 @@ public class SqlCode {
                 result = ops(token, values, tableColumns);
             }
             else {
+                // else if token.equals("AND")
                 String n2 = stack.pop();
                 String n1 = stack.pop();
                 result = ops(n1, n2, token, values, tableColumns);
@@ -268,6 +275,11 @@ public class SqlCode {
         if (operation.equals("AND")) {
             return String.valueOf(n1.equals("true") && n2.equals("true"));
         }
+        else if (operation.equals("OR")){
+            return String.valueOf(n1.equals("true") || n2.equals("true"));
+        }
+        // todo: another overloading for the NOT LIKE REGEX commands
+
         return "";
     }
 
