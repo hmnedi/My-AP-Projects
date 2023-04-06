@@ -32,10 +32,6 @@ public class SqlCode {
         else if (keyWord.equals("DELETE")) {
             deleteInto();
         }
-
-
-
-
     }
 
     private void deleteInto() throws IOException {
@@ -160,6 +156,10 @@ public class SqlCode {
         String[] queryColumns = commaSplitter(query.substring(6, query.indexOf("FROM")));
         String[] tableColumns = getTableColumns(tableName);
 
+        Vector<String> orderAggregateFunctions = new Vector<>();
+        Vector<String> aggregateCount = new Vector<>();
+        Vector<String> aggregateAvg = new Vector<>();
+        Vector<String> aggregateSum = new Vector<>();
 
         Scanner scanner = new Scanner(tableFile);
         // check for *
@@ -170,6 +170,7 @@ public class SqlCode {
         }
         else {
             scanner.nextLine();
+
             // ALIASES
             boolean oneTimeStand1 = false; // to print '|' correctly
             for(int i=0; i<queryColumns.length; i++){
@@ -183,18 +184,41 @@ public class SqlCode {
                 }
                 oneTimeStand1 =true;
             }
+
+            // check for Aggregate Functions
+            for (int i=0; i<queryColumns.length; i++){
+                if (queryColumns[i].contains("COUNT(")){
+                    // todo: search about regex here
+                    queryColumns[i] = queryColumns[i].substring(queryColumns[i].indexOf("(")+1, queryColumns[i].indexOf(")"));
+                    aggregateCount.add(queryColumns[i]);
+                    orderAggregateFunctions.add("COUNT");
+                }
+                else if (queryColumns[i].contains("AVG(")) {
+                    queryColumns[i] = queryColumns[i].substring(queryColumns[i].indexOf("(")+1, queryColumns[i].indexOf(")"));
+                    aggregateAvg.add(queryColumns[i]);
+                    orderAggregateFunctions.add("AVG");
+
+                }
+                else if (queryColumns[i].contains("SUM(")) {
+                    queryColumns[i] = queryColumns[i].substring(queryColumns[i].indexOf("(")+1, queryColumns[i].indexOf(")"));
+                    aggregateSum.add(queryColumns[i]);
+                    orderAggregateFunctions.add("SUM");
+
+                }
+            }
         }
         System.out.println();
         System.out.println("==================================");
 
         // PRINT COLUMNS
+        Vector<Vector<String>> printSelect = new Vector<>();
+
         while (scanner.hasNextLine()){
             Vector<String> rows = new Vector<>();
             String[] values = scanner.nextLine().split("\\|");
 
             // so if I split id||name|| it gives me [id, , name, , ]. I could probably save as file in a better format
             values = replaceNullWithSpace(values, tableColumns.length);
-
 
             // store columns in rows
             if (hasStar){
@@ -208,16 +232,69 @@ public class SqlCode {
                 }
             }
 
+
             // WHERE
             if (query.contains(" WHERE ")) {
                 if (evaluatePostfix(
                         infixToPostfix(parseIntoInfix(query.substring(query.indexOf(" WHERE ")+7))),
                         values, tableColumns)) {
-                    System.out.println(rows);
+                    printSelect.add(rows);
                 }
             }
+            // NO WHERE
             else {
-                System.out.println(rows);
+                printSelect.add(rows);
+            }
+        }
+
+        // decide printing aggregateFunction or columns
+        if (!aggregateCount.isEmpty() || !aggregateAvg.isEmpty() || !aggregateSum.isEmpty()){
+            int[] res = new int[queryColumns.length];
+            int[] counteResForAvg = new int[queryColumns.length];
+
+            for (int i=0; i<res.length; i++) res[i] = 0;
+            for (int i=0; i<res.length; i++) counteResForAvg[i] = 0;
+
+            for (Vector<String> row: printSelect){
+                for (int i=0; i<row.size(); i++) {
+                    // inja check bokonam tartib count, sum, avg
+                    if (orderAggregateFunctions.get(i).equals("COUNT")){
+                        if (!row.get(i).equals("")){
+                            res[i]++;
+                        }
+                    }
+                    else if (orderAggregateFunctions.get(i).equals("AVG")){
+                        if (!row.get(i).equals("")){
+                            res[i] += Integer.parseInt(row.get(i));
+                            counteResForAvg[i]++;
+                        }
+                    }
+                    else if (orderAggregateFunctions.get(i).equals("SUM")){
+                        if (!row.get(i).equals("")){
+                            res[i] += Integer.parseInt(row.get(i));
+                        }
+                    }
+                }
+            }
+
+            Vector<String> javab = new Vector<>();
+            for (int i=0; i<orderAggregateFunctions.size();i++) {
+                if (orderAggregateFunctions.get(i).equals("AVG")){
+                    float dblTmp = (float) res[i] / counteResForAvg[i];
+                    javab.add(String.valueOf(dblTmp));
+                }
+                else {
+                    javab.add(String.valueOf(res[i]));
+                }
+            }
+
+            System.out.println(javab);
+
+        }
+        else {
+            for (Vector<String> strings : printSelect) {
+                System.out.println(strings);
+
             }
         }
 
