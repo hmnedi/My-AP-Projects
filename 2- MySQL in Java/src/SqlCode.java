@@ -1,7 +1,6 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class SqlCode {
@@ -25,7 +24,13 @@ public class SqlCode {
             Select();
         }
         else if (keyWord.equals("INSERT")){
-            InsertInto();
+            insertInto();
+        }
+        else if (keyWord.equals("UPDATE")){
+            updateInto();
+        }
+        else if (keyWord.equals("DELETE")) {
+            deleteInto();
         }
 
 
@@ -33,11 +38,101 @@ public class SqlCode {
 
     }
 
-    private void InsertInto() throws IOException {
+    private void deleteInto() throws IOException {
+        String tableName = query.split(" ")[2];
+        // remove ; from the name
+        if (tableName.charAt(tableName.length()-1) == ';') tableName = tableName.substring(0, tableName.length()-1);
+        File tableFile = new File("tables/" + tableName + ".txt");
+        Scanner scanner = new Scanner(tableFile);
+        String[] tableColumns = scanner.nextLine().split("\\|");
+
+
+        if (query.contains(" WHERE ")) {
+            // load every row
+            List<String> fileContent = new ArrayList<>(Files.readAllLines(Path.of("tables/" + tableName + ".txt")));
+            fileContent.remove(0); // remove the columns names
+
+            for (int i=0; i<fileContent.size(); i++) {
+                String[] values = fileContent.get(i).split("\\|");
+                values = replaceNullWithSpace(values, tableColumns.length);
+
+                if (evaluatePostfix(
+                        infixToPostfix(parseIntoInfix(query.substring(query.indexOf(" WHERE ") + 7))),
+                        values, tableColumns)) {
+                    fileContent.remove(i);
+                }
+            }
+
+            writeFile(tableFile, tableColumns, fileContent, true);
+        }
+        else {
+            writeFile(tableFile, tableColumns);
+        }
+
+    }
+
+    private void updateInto() throws IOException {
+        String tableName = query.split(" ")[1];
+        File tableFile = new File("tables/" + tableName + ".txt");
+        Scanner scanner = new Scanner(tableFile);
+
+        String[] queryColumns;
+        String[] tableColumns = scanner.nextLine().split("\\|");
+
+        if (query.contains(" WHERE ")) queryColumns = commaSplitter(query.substring(query.indexOf("SET")+3, query.indexOf(" WHERE ")));
+        else queryColumns = commaSplitter(query.substring(query.indexOf("SET")+3, query.indexOf(";")));
+        removeRedundantSpaces(queryColumns);
+
+        // load every row
+        List<String> fileContent = new ArrayList<>(Files.readAllLines(Path.of("tables/" + tableName + ".txt")));
+        fileContent.remove(0); // remove the columns names
+
+        for (int i=0; i<fileContent.size(); i++){
+            String[] values = fileContent.get(i).split("\\|");
+            values = replaceNullWithSpace(values, tableColumns.length);
+
+            if (query.contains(" WHERE ")){
+                if (evaluatePostfix(
+                        infixToPostfix(parseIntoInfix(query.substring(query.indexOf(" WHERE ")+7))),
+                        values, tableColumns)) {
+                    for (String column: queryColumns) {
+                        String valueQuery = column.split("=")[1];
+                        column = column.split("=")[0];
+                        values[Arrays.asList(tableColumns).indexOf(column)] = deleteQuotation(valueQuery);
+                    }
+                }
+            }
+            else {
+                for (String column: queryColumns) {
+                    String valueQuery = column.split("=")[1];
+                    column = column.split("=")[0];
+                    values[Arrays.asList(tableColumns).indexOf(column)] = deleteQuotation(valueQuery);
+                }
+            }
+            fileContent.set(i, columnsToDB(values));
+        }
+
+        writeFile(tableFile, tableColumns, fileContent);
+
+    }
+
+    private void removeRedundantSpaces(String[] array) {
+        for (int i=0; i<array.length; i++){
+            String tmp = "";
+            for (int j=0; j<array[i].length(); j++){
+                if (array[i].charAt(j) != ' ') tmp += array[i].charAt(j);
+            }
+            array[i] = tmp;
+        }
+
+    }
+
+    private void insertInto() throws IOException {
         String tableName = query.split(" ")[2];
         File tableFile = new File("tables/" + tableName + ".txt");
 
         String[] values = commaSplitter(getParenthesesSubString(query.substring(query.indexOf("VALUES")+6)));
+        // INSERT INTO Custom Columns
         if ((query.substring(11, query.indexOf("VALUES"))).contains("(")) {
             String[] queryColumns = commaSplitter(getParenthesesSubString(query.substring(11, query.indexOf("VALUES"))));
             String[] tableColumns = getTableColumns(tableName);
@@ -98,14 +193,8 @@ public class SqlCode {
             String[] values = scanner.nextLine().split("\\|");
 
             // so if I split id||name|| it gives me [id, , name, , ]. I could probably save as file in a better format
-            if (values.length != tableColumns.length) {
-                values = Arrays.copyOf(values, tableColumns.length);
-                for (int i=0; i<values.length; i++) {
-                    if (values[i] == null){
-                        values[i] = "";
-                    }
-                }
-            }
+            values = replaceNullWithSpace(values, tableColumns.length);
+
 
             // store columns in rows
             if (hasStar){
@@ -132,6 +221,18 @@ public class SqlCode {
             }
         }
 
+    }
+
+    private String[] replaceNullWithSpace(String[] values, int length) {
+        if (values.length != length) {
+            values = Arrays.copyOf(values, length);
+            for (int i=0; i<values.length; i++) {
+                if (values[i] == null){
+                    values[i] = "";
+                }
+            }
+        }
+        return values;
     }
 
     private Stack<String> parseIntoInfix(String s){
@@ -338,7 +439,8 @@ public class SqlCode {
         return ret;
     }
 
-    private static String columnsToDB(String[] columns){
+    private String columnsToDB(String[] columns){
+        // I don't remember when I wrote this, but I could have used String.join("|", columns)
         String ret = "";
         for (String column : columns) {
             ret += column + "|";
@@ -346,31 +448,37 @@ public class SqlCode {
         return ret.substring(0, ret.length()-1)+"\n";
     }
 
-    private static void writeFile(File file, String line) throws IOException {
+    private void writeFile(File file, String[] tableColumns) throws IOException {
+        FileWriter writer = new FileWriter(file);
+        writer.write(String.join("|", tableColumns) + "\n");
+        writer.close();
+    }
+
+    private void writeFile(File file, String line) throws IOException {
         FileWriter writer = new FileWriter(file, true);
         writer.write(line);
         writer.close();
     }
 
-    //todo: nomre ezafe
-    /*private void checkCreateTableCommand() {
-        String[] words = query.split(" ");
-        // also check the ; at the end
-        if (words.length < 4) printInError("");
-        if (words[0].equals("CREATE") && words[1].equals("TABLE") && )
+    private void writeFile(File file, String[] tableColumns, List<String> lines) throws IOException {
+        FileWriter writer = new FileWriter(file);
+        writer.write(String.join("|", tableColumns) + "\n");
+        for (String line: lines) writer.write(line);
+        writer.close();
     }
 
-    private void printInError(String msg) {
-        System.out.println("\u001B[31m" + msg + "\u001B[30m");
+    private void writeFile(File file, String[] tableColumns, List<String> lines, boolean goNextLine) throws IOException {
+        FileWriter writer = new FileWriter(file);
+        writer.write(String.join("|", tableColumns) + "\n");
+        for (String line: lines) {
+            if (goNextLine) {
+                writer.write(line + "\n");
+            }
+            else {
+                writer.write(line);
+            }
+        }
+        writer.close();
     }
-
-    private void printInError(String msg, boolean goNextLine) {
-        if (goNextLine){
-            printInError(msg);
-        }
-        else{
-            System.out.print("\u001B[31m" + msg + "\u001B[30m");
-        }
-    }*/
 
 }
