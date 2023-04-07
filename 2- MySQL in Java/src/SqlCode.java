@@ -2,6 +2,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SqlCode {
     String query;
@@ -340,18 +342,42 @@ public class SqlCode {
             }
             else if (s.charAt(i) != ' ') {
                 String tmp = "";
+                String equation = "=";
+
                 // before the =
                 while (s.charAt(i) != '=') {
                     if (s.charAt(i) != ' ') tmp += s.charAt(i);
                     i++;
+                    if (s.startsWith(" LIKE", i)) {
+                        equation = "LIKE";
+                        break;
+                    }
+                    if (s.startsWith(" REGEXP", i)) {
+                        equation = "REGEXP";
+                        break;
+                    }
                 }
-                tmp += s.charAt(i);
-                i++;
+                if (s.charAt(i) != ' ') {
+                    tmp += s.charAt(i);
+                    i++;
+                }
+
+                // LIKE
+                if (equation.equals("LIKE")) {
+                    tmp += " LIKE ";
+                    i += 6;
+                }
+
+                // REGEXP
+                if (equation.equals("REGEXP")) {
+                    tmp += " REGEXP ";
+                    i += 8;
+                }
 
                 // skip the spaces
                 while (s.charAt(i) == ' ') i++;
 
-                // if it's digit, id=2
+                // if it's digit, 12
                 if (Character.isDigit(s.charAt(i))) {
                     while (Character.isDigit(s.charAt(i))) {
                         tmp += s.charAt(i);
@@ -360,7 +386,7 @@ public class SqlCode {
                     }
                 }
                 else{
-                    // id it's string, firstname='hooman'
+                    // if it's string, 'hooman'
                     boolean flag = false;
                     while (s.charAt(i) != '\'' || !flag){
                         if (s.charAt(i) == '\'') flag = true;
@@ -456,10 +482,39 @@ public class SqlCode {
     }
 
     private String ops(String token, String[] values, String[] tableColumns) {
-        String[] splited = token.split("=");
-        splited[1] = deleteQuotation(splited[1]);
+        if (token.contains(" LIKE ")) {
+            String[] splited = token.split(" ");
+            splited[2] = deleteQuotation(splited[2]);
+            if (splited[2].charAt(0) == '%' && splited[2].charAt(splited[2].length()-1) == '%') {
+                String theWord = splited[2].substring(1, splited[2].length()-1);
+                return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].contains(theWord));
+            }
+            else if (splited[2].charAt(0) == '%') {
+                String theWord = splited[2].substring(1);
+                return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].endsWith(theWord));
+            }
+            else if (splited[2].charAt(splited[2].length()-1) == '%') {
+                String theWord = splited[2].substring(0, splited[2].length()-1);
+                return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].startsWith(theWord));
+            }
+            else {
+                String theWord = splited[2];
+                return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].equals(theWord));
+            }
+        }
+        else if (token.contains(" REGEXP ")) {
+            String[] splited = token.split(" ");
+            splited[2] = deleteQuotation(splited[2]);
+            Pattern pattern = Pattern.compile(splited[2], Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(values[Arrays.asList(tableColumns).indexOf(splited[0])]);
+            return String.valueOf(matcher.find());
+        }
+        else {
+            String[] splited = token.split("=");
+            splited[1] = deleteQuotation(splited[1]);
+            return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].equals(splited[1]));
+        }
 
-        return String.valueOf(values[Arrays.asList(tableColumns).indexOf(splited[0])].equals(splited[1]));
     }
 
     private String ops(String n1, String n2, String operation, String[] values, String[] tableColumns) {
