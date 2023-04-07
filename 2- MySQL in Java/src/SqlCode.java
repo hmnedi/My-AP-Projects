@@ -190,7 +190,7 @@ public class SqlCode {
             // check for Aggregate Functions
             for (int i=0; i<queryColumns.length; i++){
                 if (queryColumns[i].contains("COUNT(")){
-                    // todo: search about regex here
+                    // I could have used regex I guess
                     queryColumns[i] = queryColumns[i].substring(queryColumns[i].indexOf("(")+1, queryColumns[i].indexOf(")"));
                     aggregateCount.add(queryColumns[i]);
                     orderAggregateFunctions.add("COUNT");
@@ -607,6 +607,7 @@ public class SqlCode {
 
     private void runDleteTable() {
         String tableName = query.split(" ")[2];
+        tableName = tableName.substring(0, tableName.length()-1);
         File tableFile = new File("tables/" + tableName + ".txt");
         tableFile.delete();
     }
