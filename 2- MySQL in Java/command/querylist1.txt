@@ -1,0 +1,8 @@
+CREATE TABLE Products (id, name, Color);
+INSERT INTO Products VALUES (0, 'apple', 'red');
+INSERT INTO Products VALUES (1, 'banana', 'yellow');
+INSERT INTO Products VALUES (2, 'orange', 'orange');
+INSERT INTO Products VALUES (3, 'carrot', 'orange');
+INSERT INTO Products (id, name) VALUES (4, 'sib');
+INSERT INTO Products (name, id) VALUES ('sib', 4);
+SELECT id AS ID, name AS Name, Color FROM Products WHERE (id = 4 OR (NOT name = 'apple')) ORDER BY id DESC;
