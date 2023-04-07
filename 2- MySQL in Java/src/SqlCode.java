@@ -214,6 +214,7 @@ public class SqlCode {
 
         // PRINT COLUMNS
         Vector<Vector<String>> printSelect = new Vector<>();
+        int maxLenRow = 0;
 
         while (scanner.hasNextLine()){
             Vector<String> rows = new Vector<>();
@@ -247,7 +248,29 @@ public class SqlCode {
             else {
                 printSelect.add(rows);
             }
+
+            maxLenRow = Math.max(maxLenRow, rows.size());
         }
+
+
+        // I should have chosen my DS better
+        String[][] copyOfVector = new String[printSelect.size()][maxLenRow];
+        for (int i=0; i<printSelect.size(); i++) {
+            for (int j=0; j<printSelect.get(i).size(); j++) {
+                copyOfVector[i][j] = printSelect.get(i).get(j);
+            }
+        }
+
+        // ORDER BY
+        if (query.contains("ORDER BY")) {
+            String[] words = query.substring(query.indexOf("ORDER BY ")+9, query.length()-1).split(" ");
+            String priorityColumn = words[0];
+            boolean isAscending = words.length != 2 || !words[1].equals("DESC");
+
+
+            sortByColumn(copyOfVector, Arrays.asList(tableColumns).indexOf(priorityColumn), isAscending);
+        }
+
 
         // decide printing aggregateFunction or columns
         if (!aggregateCount.isEmpty() || !aggregateAvg.isEmpty() || !aggregateSum.isEmpty()){
@@ -291,15 +314,56 @@ public class SqlCode {
             }
 
             System.out.println(javab);
-
         }
         else {
-            for (Vector<String> strings : printSelect) {
-                System.out.println(strings);
-
+            for (String[] strings : copyOfVector) {
+                System.out.println(Arrays.toString(strings));
             }
         }
 
+    }
+
+    private void sortByColumn(String[][] arr, int col, boolean isAscending) {
+        Arrays.sort(arr, new Comparator<String[]>() {
+            @Override
+            public int compare(String[] o1, String[] o2) {
+                int a, b;
+                if (isNumeric(o1[col]) && isNumeric(o2[col])){
+                    a = Integer.parseInt(o1[col]);
+                    b = Integer.parseInt(o2[col]);
+                }
+                else {
+                    a = Integer.valueOf(Character.toUpperCase(o1[col].charAt(0)));
+                    b = Integer.valueOf(Character.toUpperCase(o2[col].charAt(0)));
+
+                    for (int i = 0; i < Math.min(o1[col].length(), o2[col].length()); i++)
+                        if (Character.toUpperCase(o1[col].charAt(i)) != Character.toUpperCase(o2[col].charAt(i))) {
+                            a = Integer.valueOf(Character.toUpperCase(o1[col].charAt(0)));
+                            b = Integer.valueOf(Character.toUpperCase(o2[col].charAt(0)));
+                            break;
+                        }
+                }
+
+
+                if (isAscending){
+                    if (a > b)
+                        return 1;
+                    else
+                        return -1;
+                }
+                else {
+                    if (a < b)
+                        return 1;
+                    else
+                        return -1;
+                }
+
+            }
+        });
+    }
+
+    public boolean isNumeric(String str) {
+        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 
     private String[] replaceNullWithSpace(String[] values, int length) {
@@ -338,6 +402,9 @@ public class SqlCode {
                 infix.push(")");
             }
             else if (s.charAt(i) == ';'){
+                break;
+            }
+            else if (s.startsWith("ORDER BY ", i)){
                 break;
             }
             else if (s.charAt(i) != ' ') {
