@@ -1,0 +1,10 @@
+id|firstname|lastname|city
+1|hooman||rasht
+2|hooman|edraki|tehran
+3|hooman|barghnavard|tehran
+1|hooman||shiraz
+1|arash|niazi|rasht
+2|pink|floyd|usa
+0|maria||
+2|hootan|edi|kerman
+1|ara'sh|niazi|rasht
