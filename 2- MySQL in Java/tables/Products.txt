@@ -1,0 +1,7 @@
+id|name|Color
+0|apple|red
+1|banana|yellow
+2|orange|orange
+3|carrot|orange
+4|sib|
+4|sib|
