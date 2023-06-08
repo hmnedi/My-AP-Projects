@@ -131,4 +131,22 @@ public class Connect {
 
     }
 
+    public boolean loginCorrect(String username, String password, String role) {
+        if (username.equals("admin") && password.equals("admin") && role.equals("Admin")) return true;
+
+        String sql = "SELECT * FROM " + role + " WHERE username = '" + username + "' AND password = '" + password + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+
+            if (rs.next()) {
+                return !rs.getString("firstname").equals("");
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
 }
