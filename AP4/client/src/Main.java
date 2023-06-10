@@ -50,16 +50,24 @@ public class Main {
         // 3- age nomre nadashtan sabt kon age dshtn edit kon
         // if (editable):
 //        addScore(20);
+//        selectObjbections();
+//        answerObjections(1);
 
         // role student:
         // show units of major
 //        getUnitsOfStudent();
+//        System.out.println(isTakingUnitAllowed());
         // take units
 //        takeUnits(1);
 //        takeUnits(2);
+//        objection(1, "miss calculation");
 
 
         // role headOfFaculty
+//        getUnitsOfMajor();
+//        setTakingUnit(false);
+//        cahngeUnitCapacity(1, 95);
+//        registerScore(1);
 
 
 
@@ -88,6 +96,47 @@ public class Main {
 
     }
 
+    private static void answerObjections(int objectionID) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "read objection");
+        jsonData.put("objectionID", objectionID);
+
+        client.sendRequest(jsonData);
+    }
+
+    private static void selectObjbections() throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "get objection");
+        System.out.println(client.sendRequestgetArray(jsonData).toString());
+    }
+    private static void objection(int gradeID, String type) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "objection");
+        jsonData.put("gradeID", gradeID);
+        jsonData.put("type", type);
+        client.sendRequest(jsonData);
+    }
+
+    private static void cahngeUnitCapacity(int unitID, int capacity) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "cahngeUnitCapacity");
+        jsonData.put("unitID", unitID);
+        jsonData.put("capacity", capacity);
+        client.sendRequest(jsonData);
+    }
+
+    private static void setTakingUnit(boolean b) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "set TakingUnit");
+        jsonData.put("state", b);
+        client.sendRequest(jsonData);
+    }
+
+    private static boolean isTakingUnitAllowed() throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "isTakingUnitAllowed");
+        return (boolean) client.sendRequestgetObject(jsonData).get("takingUnitStats");
+    }
 
 
     public static void addMajor (String name, int facultyID) throws IOException {
@@ -209,18 +258,33 @@ public class Main {
 
     }
 
+    private static void getUnitsOfMajor() throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "getUnitsOfFaculty");
+        System.out.println(client.sendRequestgetArray(jsonData));
+
+    }
+
     public static void takeUnits(int unitID) throws IOException {
         JSONObject jsonData = new JSONObject();
         jsonData.put("request", "takeUnit");
         jsonData.put("unitID", unitID);
 
         client.sendRequest(jsonData);
+
     }
 
     public static void addScore (double score) throws IOException {
         JSONObject jsonData = new JSONObject();
         jsonData.put("request", "set score");
         jsonData.put("score", score);
+
+        client.sendRequest(jsonData);
+    }
+    public static void registerScore (int unitID) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "set scoreEditable false");
+        jsonData.put("unitID", unitID);
 
         client.sendRequest(jsonData);
     }
