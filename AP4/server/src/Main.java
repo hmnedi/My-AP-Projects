@@ -135,10 +135,10 @@ class ClientHandler extends Thread {
                     new Connect().runQuery(sql);
                 }
                 else if (req.equals("insert faculty")) {
-                    String sql = "INSERT INTO Faculty(facultyName, professorID)"
+                    String sql = "INSERT INTO Faculty(facultyName, professorID, takingUnit)"
                             + " VALUES ('"+ jsonReq.get("facultyName")
                             +"', "+ jsonReq.get("professorID")
-                            +");";
+                            +", true);";
                     new Connect().runQuery(sql);
                 }
                 else if (req.equals("insert major")) {
@@ -189,6 +189,80 @@ class ClientHandler extends Thread {
 
                     new Connect().runQuery(sql);
                 }
+                else if (req.equals("getUnitsOfFaculty")) {
+                    // i could have used a query with 3 table inner join
+                    JSONArray jsonArray = new Connect().getUnitsOfFaculty(username);
+                    outputStream.writeObject(jsonArray);
+                    outputStream.flush();
+                }
+                else if (req.equals("isTakingUnitAllowed")) {
+                    Connect connect = new Connect();
+                    JSONObject jsonObject = new JSONObject();
+                    if (role.equals("Studnt")) {
+                        jsonObject.put("takingUnitStats", connect.isTakingUnitAllowed(connect.getFacultyIdFromStudent(username)));
+                    } else {
+                        jsonObject.put("takingUnitStats", connect.isTakingUnitAllowed(connect.getFacultyIdFromProfessor(username)));
+                    }
+                    outputStream.writeObject(jsonObject);
+                    outputStream.flush();
+
+                }
+                else if (req.equals("set TakingUnit")) {
+                    Connect connect = new Connect();
+
+                    String sql = "UPDATE Faculty SET takingUnit = "
+                            + jsonReq.get("state")
+                            + " WHERE facultyID = "
+                            + connect.getFacultyIdFromProfessor(username)
+                            + ";";
+
+                    connect.runQuery(sql);
+                }
+                else if (req.equals("cahngeUnitCapacity")) {
+                    Connect connect = new Connect();
+
+                    String sql = "UPDATE Unit SET capacity = "
+                            + jsonReq.get("capacity")
+                            + " WHERE unitID = "
+                            + jsonReq.get("unitID")
+                            + ";";
+
+                    connect.runQuery(sql);
+                }
+                else if (req.equals("set scoreEditable false")) {
+                    Connect connect = new Connect();
+
+                    String sql = "UPDATE Grade SET isEditable = false WHERE unitID = "
+                            + jsonReq.get("unitID")
+                            + ";";
+
+                    connect.runQuery(sql);
+                }
+                else if (req.equals("objection")) {
+                    Connect connect = new Connect();
+                    String sql = "INSERT INTO Objection(studentID, gradeID, type, isRead)"
+                            + " VALUES ("+ connect.getStudentIDbyUsername(username)
+                            +", "+ jsonReq.get("gradeID")
+                            +", '"+ jsonReq.get("type")
+                            +"', false);";
+
+                    connect.runQuery(sql);
+                }
+                else if (req.equals("get objection")) {
+                    Connect connect = new Connect();
+                    JSONArray jsonArray= connect.getObjections(connect.getProfessorID(username));
+                    outputStream.writeObject(jsonArray);
+                    outputStream.flush();
+                }
+                else if (req.equals("read objection")) {
+                    Connect connect = new Connect();
+                    String sql = "UPDATE Objection SET isRead = true WHERE objectID = "
+                            + jsonReq.get("objectionID")
+                            + ";";
+
+                    connect.runQuery(sql);
+                }
+
                 else {
                     System.out.println("not ready");
                 }
