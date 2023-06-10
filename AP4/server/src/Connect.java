@@ -1,5 +1,9 @@
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.sql.*;
 import java.util.HashMap;
+import java.util.Vector;
 
 public class Connect {
     public static String url;
@@ -50,8 +54,7 @@ public class Connect {
                 + " firstname text NOT NULL,\n"
                 + " lastname text NOT NULL,\n"
                 + " username text NOT NULL,\n"
-                + " password text NOT NULL,\n"
-                + " isHeadFaculty boolean NOT NULL\n"
+                + " password text NOT NULL\n"
                 + ");";
         this.runQuery(sql);
 
@@ -93,15 +96,16 @@ public class Connect {
                 + " gradeID integer PRIMARY KEY,\n"
                 + " studentID integer NOT NULL,\n"
                 + " unitID integer NOT NULL,\n"
-                + " score integer NOT NULL,\n"
+                + " score REAL,\n"
+                + " professorID integer,\n"
                 + " isEditable boolean NOT NULL\n"
                 + ");";
         this.runQuery(sql);
 
-        sql = "INSERT INTO Professor(firstname, lastname, username, password, isHeadFaculty) VALUES ('farid', 'feyzi', 'ffeyzi', '1234', false);";
+        sql = "INSERT INTO Professor(firstname, lastname, username, password) VALUES ('farid', 'feyzi', 'ffeyzi', '1234');";
         this.runQuery(sql);
 
-        sql = "INSERT INTO Professor(firstname, lastname, username, password, isHeadFaculty) VALUES ('mohammad', 'salehi', 'msalehi', '4321', true);";
+        sql = "INSERT INTO Professor(firstname, lastname, username, password) VALUES ('mohammad', 'salehi', 'msalehi', '4321');";
         this.runQuery(sql);
 
         sql = "INSERT INTO Faculty(facultyName, professorID) VALUES ('computer engineering', 2);";
@@ -147,6 +151,205 @@ public class Connect {
             System.out.println(e.getMessage());
         }
         return false;
+    }
+
+    public JSONArray selectProfessor () {
+        JSONArray lists = new JSONArray();
+
+        String sql = "SELECT * FROM Professor;";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+
+            while (rs.next()) {
+                JSONObject professorData = new JSONObject();
+                professorData.put("id", rs.getInt("professorID"));
+                professorData.put("firstname", rs.getString("firstname"));
+                professorData.put("lastname", rs.getString("lastname"));
+                professorData.put("username", rs.getString("username"));
+
+                lists.add(professorData);
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return lists;
+    }
+
+    public int getMajorID (String majorName) {
+        String sql = "SELECT * FROM Major WHERE majorName = '" + majorName + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getInt("majorID");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getFacultyIdFromStudent (String username) {
+        String sql = "SELECT majorID FROM Student WHERE username = '" + username + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                int majorID = rs.getInt("majorID");
+                String sql2 = "SELECT facultyID FROM Major WHERE majorID = " + majorID + ";";
+                try (Statement stmt2 = conn.createStatement();
+                     ResultSet rs2 = stmt.executeQuery(sql2)) {
+                    if (rs2.next()) return rs2.getInt("facultyID");
+                } catch (SQLException e2) {
+                    System.out.println(e2.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getStudentID (String firstname, String lastname) {
+        String sql = "SELECT * FROM Student WHERE firstname = '" + firstname + "' AND lastname = '" + lastname + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getInt("studentID");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getStudentIDfromUsername (String username) {
+        String sql = "SELECT * FROM Student WHERE username = '" + username + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getInt("studentID");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getProfessorID (String firstname, String lastname) {
+        String sql = "SELECT * FROM Professor WHERE firstname = '" + firstname + "' AND lastname = '" + lastname + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getInt("professorID");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getProfessorID (String username) {
+        String sql = "SELECT * FROM Professor WHERE username = '" + username + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getInt("professorID");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getFacultyID (String name) {
+        String sql = "SELECT * FROM Faculty WHERE facultyName = '" + name + "';";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getInt("facultyID");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
+    }
+
+    public JSONArray getStudentsFromUnits (int unitID) {
+        JSONArray jsonArray = new JSONArray();
+
+        String sql = "SELECT * FROM Grade WHERE unitID = " + unitID + ";";
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("gradeID", rs.getInt("gradeID"));
+                jsonObject.put("studentID", rs.getInt("studentID"));
+                jsonObject.put("score", rs.getInt("score"));
+                jsonObject.put("professorID", rs.getInt("professorID"));
+                jsonObject.put("isEditable", rs.getBoolean("isEditable"));
+
+                jsonArray.add(jsonObject);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return jsonArray;
+    }
+
+    public JSONArray getUnitIdName (String username) {
+        int idprf = getProfessorID(username);
+        String sql = "SELECT unitID, unitName FROM Unit INNER JOIN Professor ON Unit.professorID" +
+                " = Professor.professorID WHERE Professor.professorID = " + idprf + ";";
+        JSONArray jsonArray = new JSONArray();
+
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("unitName", rs.getString("unitName"));
+                jsonData.put("unitID", rs.getInt("unitID"));
+
+                jsonArray.add(jsonData);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return jsonArray;
+    }
+
+    public JSONArray getUnitsOfStudent (String username) {
+        int facultyID = getFacultyIdFromStudent(username);
+
+        String sql = "SELECT unitID, unitName FROM Unit WHERE facultyID = " + facultyID +  ";";
+        JSONArray jsonArray = new JSONArray();
+
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("unitName", rs.getString("unitName"));
+                jsonData.put("unitID", rs.getInt("unitID"));
+
+                jsonArray.add(jsonData);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return jsonArray;
+
     }
 
 }
