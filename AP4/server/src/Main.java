@@ -1,152 +1,205 @@
-import java.sql.*;
-import java.util.HashMap;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-public class Connect {
-    public static String url;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
 
-    public void setUrl(String filename) {
-        url = "jdbc:sqlite:" + filename + ".db";
+public class Main {
+    public static void main(String[] args) throws IOException {
+        
+
+        Connect connect = new Connect();
+        connect.setUrl("university");
+//        connect.setUpTables();
+
+        ServerSocket serverSocket = new ServerSocket(7070);
+
+
+        while (true) {
+            Socket clientSocket = serverSocket.accept();
+//        get connected socket and save it in ClientHandler class
+            ClientHandler clienthandler = new ClientHandler(clientSocket);
+
+//            After defining the function of each ClientHandler (run function), we start it
+            clienthandler.start();
+//            then go to first line of loop and wait for new client
+        }
+
+    }
+}
+
+class ClientHandler extends Thread {
+    Socket clientSocket;
+    public ClientHandler(Socket clientSocket) {
+        this.clientSocket = clientSocket;
+
     }
 
-    private Connection connect() {
-        // SQLite connection string
-        Connection conn = null;
+    @Override
+    public void run() {
+        ObjectOutputStream outputStream = null;
+        ObjectInputStream inputStream = null;
+
         try {
-            conn = DriverManager.getConnection(url);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            inputStream = new ObjectInputStream(clientSocket.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return conn;
-    }
 
-    public void createNewDatabase() {
-        try {
-            Connection conn = this.connect();
-            if (conn != null) {
-                DatabaseMetaData meta = conn.getMetaData();
+        String username = null, password = null, role = null;
+        int unitID = 0;
+        while (clientSocket.isConnected()) {
+
+            try {
+                // parse the request from jason
+                JSONObject jsonReq = (JSONObject) inputStream.readObject();
+                String req = (String) jsonReq.get("request");
+
+                if (req.equals("login")) {
+                    System.out.println("checking data...");
+
+                    username = (String) jsonReq.get("username");
+                    password = (String) jsonReq.get("password");
+                    role = (String) jsonReq.get("role");
+
+                    JSONObject jsonStat = new JSONObject();
+                    if (new Connect().loginCorrect(username, password, role)){
+                        jsonStat.put("status", 200);
+                        System.out.println("login successful");
+                    }
+                    else {
+                        jsonStat.put("status", 401);
+                        System.out.println("login failed");
+                    }
+
+                    outputStream.writeObject(jsonStat);
+                    outputStream.flush();
+                }
+                else if (req.equals("insert professor")) {
+                    String sql = "INSERT INTO Professor(firstname, lastname, username, password)"
+                            + " VALUES ('"+ jsonReq.get("firstname")
+                            +"', '"+ jsonReq.get("lastname")
+                            +"', '"+ jsonReq.get("username")
+                            +"', '"+ jsonReq.get("password")
+                            +"');";
+                    new Connect().runQuery(sql);
+                }
+                else if (req.equals("select all professor")) {
+                    JSONArray jsonArray = new Connect().selectProfessor();
+                    outputStream.writeObject(jsonArray);
+                    outputStream.flush();
+                }
+                else if (req.equals("get professorID")){
+                    int id = new Connect().getProfessorID((String) jsonReq.get("firstname"), (String) jsonReq.get("lastname"));
+                    JSONObject jsonDataSend = new JSONObject();
+                    jsonDataSend.put("professorID", id);
+                    outputStream.writeObject(jsonDataSend);
+                    outputStream.flush();
+                }
+                else if (req.equals("get studentID")){
+                    int id = new Connect().getProfessorID((String) jsonReq.get("firstname"), (String) jsonReq.get("lastname"));
+                    JSONObject jsonDataSend = new JSONObject();
+                    jsonDataSend.put("studentID", id);
+                    outputStream.writeObject(jsonDataSend);
+                    outputStream.flush();
+                }
+                else if (req.equals("get MajorID")){
+                    int id = new Connect().getMajorID((String) jsonReq.get("majorName"));
+                    JSONObject jsonDataSend = new JSONObject();
+                    jsonDataSend.put("majorID", id);
+                    outputStream.writeObject(jsonDataSend);
+                    outputStream.flush();
+                }
+                else if (req.equals("get facultyID")){
+                    int id = new Connect().getFacultyID((String) jsonReq.get("facultyName"));
+                    JSONObject jsonDataSend = new JSONObject();
+                    jsonDataSend.put("facultyID", id);
+                    outputStream.writeObject(jsonDataSend);
+                    outputStream.flush();
+                }
+                else if (req.equals("insert student")) {
+                    String sql = "INSERT INTO Student(firstname, lastname, username, password, majorID)"
+                            + " VALUES ('"+ jsonReq.get("firstname")
+                            +"', '"+ jsonReq.get("lastname")
+                            +"', '"+ jsonReq.get("username")
+                            +"', '"+ jsonReq.get("password")
+                            +"', "+ jsonReq.get("majorID")
+                            +");";
+                    new Connect().runQuery(sql);
+                }
+                else if (req.equals("insert faculty")) {
+                    String sql = "INSERT INTO Faculty(facultyName, professorID)"
+                            + " VALUES ('"+ jsonReq.get("facultyName")
+                            +"', "+ jsonReq.get("professorID")
+                            +");";
+                    new Connect().runQuery(sql);
+                }
+                else if (req.equals("insert major")) {
+                    String sql = "INSERT INTO Major(majorName, facultyID)"
+                            + " VALUES ('"+ jsonReq.get("majorName")
+                            +"', "+ jsonReq.get("facultyID")
+                            +");";
+                    new Connect().runQuery(sql);
+                }
+                else if (req.equals("set headFaculty")) {
+                    String sql = "UPDATE Faculty SET professorID = "
+                            + jsonReq.get("professorID")
+                            + " WHERE facultyID = "
+                            + jsonReq.get("facultyID")
+                            + " ;";
+                    new Connect().runQuery(sql);
+                }
+                else if (req.equals("get professorUnits")) {
+                    JSONArray jsonData = new Connect().getUnitIdName(username);
+                    outputStream.writeObject(jsonData);
+                    outputStream.flush();
+                }
+                else if (req.equals("getUnitsOfStudent")) {
+                    JSONArray jsonData = new Connect().getUnitsOfStudent(username);
+                    outputStream.writeObject(jsonData);
+                    outputStream.flush();
+                }
+                else if (req.equals("takeUnit")) {
+                    String sql = "INSERT INTO Grade(studentID, unitID, isEditable)"
+                            + " VALUES (" + new Connect().getStudentIDfromUsername(username)
+                            +", "+ jsonReq.get("unitID") + ", true);";
+                    new Connect().runQuery(sql);
+                }
+                else if (req.equals("getStudentsOfaUnit")) {
+                    unitID = (int) jsonReq.get("unitID");
+                    JSONArray jsonArray = new Connect().getStudentsFromUnits(unitID);
+                    outputStream.writeObject(jsonArray);
+                    outputStream.flush();
+                }
+                else if (req.equals("set score")) {
+                    String sql = "UPDATE Grade SET score = "
+                            + jsonReq.get("score")
+                            + ", professorID = "
+                            + new Connect().getProfessorID(username)
+                            + " WHERE unitID = "
+                            + unitID
+                            + " ;";
+
+                    new Connect().runQuery(sql);
+                }
+                else {
+                    System.out.println("not ready");
+                }
+
+            } catch (IOException | ClassNotFoundException e) {
+                //e.printStackTrace();
+                // if disconnect break the loop
+                System.out.println("disconnect");
+                break;
             }
-            conn.close();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
         }
-    }
-
-    public void runQuery(String query) {
-        try{
-            Connection conn = this.connect();
-            Statement stmt = conn.createStatement();
-            stmt.execute(query);
-            conn.close();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public void setUpTables(){
-        this.createNewDatabase();
-
-        String sql = "CREATE TABLE Professor (\n"
-                + " professorID integer PRIMARY KEY,\n"
-                + " firstname text NOT NULL,\n"
-                + " lastname text NOT NULL,\n"
-                + " username text NOT NULL,\n"
-                + " password text NOT NULL,\n"
-                + " isHeadFaculty boolean NOT NULL\n"
-                + ");";
-        this.runQuery(sql);
-
-        sql = "CREATE TABLE Student (\n"
-                + " studentID integer PRIMARY KEY,\n"
-                + " firstname text NOT NULL,\n"
-                + " lastname text NOT NULL,\n"
-                + " username text NOT NULL,\n"
-                + " password text NOT NULL,\n"
-                + " majorID integer NOT NULL\n"
-                + ");";
-        this.runQuery(sql);
-
-        sql = "CREATE TABLE Major (\n"
-                + " majorID integer PRIMARY KEY,\n"
-                + " majorName text NOT NULL,\n"
-                + " facultyID integer NOT NULL\n"
-                + ");";
-        this.runQuery(sql);
-
-        // groh amoozeshi
-        sql = "CREATE TABLE Faculty (\n"
-                + " facultyID integer PRIMARY KEY,\n"
-                + " facultyName text NOT NULL,\n"
-                + " professorID integer NOT NULL\n"
-                + ");";
-        this.runQuery(sql);
-
-        sql = "CREATE TABLE Unit (\n"
-                + " unitID integer PRIMARY KEY,\n"
-                + " unitName text NOT NULL,\n"
-                + " facultyID integer NOT NULL,\n"
-                + " professorID integer NOT NULL,\n"
-                + " capacity integer NOT NULL\n"
-                + ");";
-        this.runQuery(sql);
-
-        sql = "CREATE TABLE Grade (\n"
-                + " gradeID integer PRIMARY KEY,\n"
-                + " studentID integer NOT NULL,\n"
-                + " unitID integer NOT NULL,\n"
-                + " score integer NOT NULL,\n"
-                + " isEditable boolean NOT NULL\n"
-                + ");";
-        this.runQuery(sql);
-
-        sql = "INSERT INTO Professor(firstname, lastname, username, password, isHeadFaculty) VALUES ('farid', 'feyzi', 'ffeyzi', '1234', false);";
-        this.runQuery(sql);
-
-        sql = "INSERT INTO Professor(firstname, lastname, username, password, isHeadFaculty) VALUES ('mohammad', 'salehi', 'msalehi', '4321', true);";
-        this.runQuery(sql);
-
-        sql = "INSERT INTO Faculty(facultyName, professorID) VALUES ('computer engineering', 2);";
-        this.runQuery(sql);
-
-        sql = "INSERT INTO Major(majorName, facultyID) VALUES ('computer engineering', 1);";
-        this.runQuery(sql);
-
-        sql = "INSERT INTO Student(firstname, lastname, username, password, majorID) VALUES ('hooman', 'edraki', 'human', 'toor', 1);";
-        this.runQuery(sql);
-
-        sql = "INSERT INTO Unit(unitName, facultyID, professorID, capacity) VALUES ('AP', 1, 1, 90);";
-        this.runQuery(sql);
-
-//        sql = "SELECT Unit.unitName FROM Unit INNER JOIN Professor ON Unit.professorID = Professor.professorID;";
-//        try (Connection conn = this.connect();
-//             Statement stmt  = conn.createStatement();
-//             ResultSet rs    = stmt.executeQuery(sql)){
-//
-//            // loop through the result set
-//            while (rs.next()) {
-//                System.out.println(rs.getString("unitName"));
-//            }
-//        } catch (SQLException e) {
-//            System.out.println(e.getMessage());
-//        }
 
     }
-
-    public boolean loginCorrect(String username, String password, String role) {
-        if (username.equals("admin") && password.equals("admin") && role.equals("Admin")) return true;
-
-        String sql = "SELECT * FROM " + role + " WHERE username = '" + username + "' AND password = '" + password + "';";
-        try (Connection conn = this.connect();
-             Statement stmt  = conn.createStatement();
-             ResultSet rs    = stmt.executeQuery(sql)){
-
-            if (rs.next()) {
-                return !rs.getString("firstname").equals("");
-            }
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return false;
-    }
-
 }
