@@ -381,9 +381,11 @@ public class Connect {
     public JSONArray getUnitsOfStudent (String username) {
         int facultyID = getFacultyIdFromStudent(username);
 
-        String sql = "SELECT unitID, unitName FROM Unit WHERE facultyID = " + facultyID +  ";";
-        JSONArray jsonArray = new JSONArray();
+//        String sql = "SELECT unitID, unitName FROM Unit WHERE facultyID = " + facultyID +  ";";
+        String sql = "SELECT Unit.unitID, Unit.unitName FROM Unit LEFT JOIN Grade ON Unit.unitID = Grade.unitID " +
+                "WHERE Grade.unitID IS NULL AND Unit.facultyID = " + facultyID + ";";
 
+        JSONArray jsonArray = new JSONArray();
         try (Connection conn = this.connect();
              Statement stmt  = conn.createStatement();
              ResultSet rs    = stmt.executeQuery(sql)){
@@ -398,7 +400,30 @@ public class Connect {
             System.out.println(e.getMessage());
         }
         return jsonArray;
+    }
 
+    public JSONArray getReportCardGrades (String username) {
+        int studentID = getStudentIDbyUsername(username);
+
+        String sql = "SELECT gradeID, unitID, score, professorID FROM Grade WHERE studentID = " + studentID +  ";";
+
+        JSONArray jsonArray = new JSONArray();
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("gradeID", rs.getInt("gradeID"));
+                jsonData.put("unitName", getNameFromUnitID(rs.getInt("unitID")));
+                jsonData.put("score", rs.getDouble("score"));
+                jsonData.put("professorName", getNameFromProfessorID(rs.getInt("professorID")));
+
+                jsonArray.add(jsonData);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return jsonArray;
     }
 
     public JSONArray getObjections (int prfID) {
@@ -512,6 +537,20 @@ public class Connect {
         return "";
     }
 
+    public String getNameFromProfessorID (int professorID) {
+        String sql = "SELECT firstname, lastname FROM Professor WHERE professorID = " + professorID +  ";";
+
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            if (rs.next()) {
+                return rs.getString("firstname") + " " + rs.getString("lastname");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return "";
+    }
     public JSONObject getDataFromGradeID (int gradeID) {
         JSONObject jsonObject = new JSONObject();
         String sql = "SELECT score, unitID, studentID FROM Grade WHERE gradeID = " + gradeID +  ";";

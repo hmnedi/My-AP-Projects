@@ -289,6 +289,12 @@ class ClientHandler extends Thread {
                     outputStream.writeObject(data);
                     outputStream.flush();
                 }
+                else if (req.equals("getReportCardGrades")) {
+                    Connect connect = new Connect();
+                    JSONArray data = connect.getReportCardGrades(username);
+                    outputStream.writeObject(data);
+                    outputStream.flush();
+                }
                 else {
                     System.out.println("not ready");
                 }
