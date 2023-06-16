@@ -103,6 +103,13 @@ class ClientHandler extends Thread {
                     outputStream.writeObject(jsonDataSend);
                     outputStream.flush();
                 }
+                else if (req.equals("get professorID by username")){
+                    int id = new Connect().getProfessorID((String) jsonReq.get("username"));
+                    JSONObject jsonDataSend = new JSONObject();
+                    jsonDataSend.put("professorID", id);
+                    outputStream.writeObject(jsonDataSend);
+                    outputStream.flush();
+                }
                 else if (req.equals("get studentID")){
                     int id = new Connect().getProfessorID((String) jsonReq.get("firstname"), (String) jsonReq.get("lastname"));
                     JSONObject jsonDataSend = new JSONObject();
@@ -183,9 +190,9 @@ class ClientHandler extends Thread {
                             + jsonReq.get("score")
                             + ", professorID = "
                             + new Connect().getProfessorID(username)
-                            + " WHERE unitID = "
-                            + unitID
-                            + " ;";
+                            + " WHERE gradeID = "
+                            + jsonReq.get("gradeID")
+                            + ";";
 
                     new Connect().runQuery(sql);
                 }
@@ -198,7 +205,7 @@ class ClientHandler extends Thread {
                 else if (req.equals("isTakingUnitAllowed")) {
                     Connect connect = new Connect();
                     JSONObject jsonObject = new JSONObject();
-                    if (role.equals("Studnt")) {
+                    if (role.equals("Student")) {
                         jsonObject.put("takingUnitStats", connect.isTakingUnitAllowed(connect.getFacultyIdFromStudent(username)));
                     } else {
                         jsonObject.put("takingUnitStats", connect.isTakingUnitAllowed(connect.getFacultyIdFromProfessor(username)));
@@ -238,6 +245,13 @@ class ClientHandler extends Thread {
 
                     connect.runQuery(sql);
                 }
+                else if (req.equals("set all scoreEditable false")) {
+                    Connect connect = new Connect();
+
+                    String sql = "UPDATE Grade SET isEditable = false;";
+
+                    connect.runQuery(sql);
+                }
                 else if (req.equals("objection")) {
                     Connect connect = new Connect();
                     String sql = "INSERT INTO Objection(studentID, gradeID, type, isRead)"
@@ -249,7 +263,7 @@ class ClientHandler extends Thread {
                     connect.runQuery(sql);
                 }
                 else if (req.equals("get objection")) {
-                    Connect connect = new Connect();
+                    Connect connect = new Connect();;
                     JSONArray jsonArray= connect.getObjections(connect.getProfessorID(username));
                     outputStream.writeObject(jsonArray);
                     outputStream.flush();
@@ -262,7 +276,19 @@ class ClientHandler extends Thread {
 
                     connect.runQuery(sql);
                 }
-
+                else if (req.equals("is head faculty")) {
+                    Connect connect = new Connect();
+                    JSONObject data = new JSONObject();
+                    data.put("isHead", connect.isHeadOfFaculty((int) jsonReq.get("professorID")));
+                    outputStream.writeObject(data);
+                    outputStream.flush();
+                }
+                else if (req.equals("getDataFromGradeID")) {
+                    Connect connect = new Connect();
+                    JSONObject data = connect.getDataFromGradeID((int) jsonReq.get("gradeID"));
+                    outputStream.writeObject(data);
+                    outputStream.flush();
+                }
                 else {
                     System.out.println("not ready");
                 }
