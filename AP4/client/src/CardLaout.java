@@ -2,32 +2,30 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
-import java.util.Scanner;
 
 public class CardLaout extends JFrame implements ActionListener {
     public Send client;
     CardLayout cardLayout;
-    JButton btnLogin, btnAddProfessor, btnAddStudent, btnAddFaculty, btnAddMajor;
+    JScrollPane profUnitListScrollPanel, profUnitsscrollPaneObjection;
+    JButton btnLogin, btnAddProfessor, btnAddStudent, btnAddFaculty, btnAddMajor, btnAddHeadFaculty, btnBack, btnBack1
+            , btnIsHeadFaculty, btnGoBackToProf, btnOCTakingUnit, btnMakeScoreFixed, btnHeadFacultyChangeCapacity,
+            btnProfReadObjections, btnProfChoose, btnProfBackPage;
     JTextField txtUsername, txtPassword, adminPrfFirstname, adminPrfLastname, adminPrfUsername, adminPrfPassword,
             adminStuFirstname, adminStuLastname, adminStuUsername, adminStuPassword, adminStuMajor, adminFacName,
-            adminFacPrfFirstName, adminFacPrfLastName;
+            adminFacPrfFirstName, adminFacPrfLastName, adminMajorName, adminMajorFacultyID, adminHeadFirst,
+            adminHeadLast, adminHeadFac, headFacNewCaps, txtSetScore;
     JComboBox comboBoxRole;
     Container container;
-    JPanel pnlObjections;
-    JList listObjections;
+    JList jlistheadFacultyUnits, jlistObjection, jlistProfessorUnits, jlistStudentOfUnit;
+    DefaultListModel  adminProfeserList, headFacultyUnits, objectionList, professorUnitsList, studendOfUnitList;
 
     public CardLaout() throws IOException, ClassNotFoundException {
 
@@ -97,15 +95,128 @@ public class CardLaout extends JFrame implements ActionListener {
         JLabel panelProfessor = new JLabel(professorMenuBack);
 
         // objection box
-        // data dumping is in the action listener
-        pnlObjections = new JPanel();
-        pnlObjections.setLayout(new GridLayout(10, 2));
-        pnlObjections.setBackground(new Color(0xE89F4955, true));
+        objectionList = new DefaultListModel();
+        jlistObjection = new JList(objectionList);
+        JScrollPane scrollPaneObjection = new JScrollPane(jlistObjection,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPaneObjection.setBounds(30, 30, 260, 330);
 
-        JScrollPane scrollPaneObjection = new JScrollPane(pnlObjections, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPaneObjection.setBounds(30, 30, 260, 350);
+        // professor units
+        professorUnitsList = new DefaultListModel();
+        jlistProfessorUnits = new JList(professorUnitsList);
+        profUnitsscrollPaneObjection = new JScrollPane(jlistProfessorUnits,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        profUnitsscrollPaneObjection.setBounds(530, 55, 250, 330);
+
+        // list of students of a unit
+        studendOfUnitList = new DefaultListModel();
+        jlistStudentOfUnit = new JList(studendOfUnitList);
+        profUnitListScrollPanel = new JScrollPane(jlistStudentOfUnit,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        profUnitListScrollPanel.setBounds(530, 55, 250, 330);
+        profUnitListScrollPanel.setVisible(false);
+
+        btnProfChoose = new JButton("choose");
+        btnProfChoose.setFocusable(false);
+        btnProfChoose.addActionListener(this);
+        btnProfChoose.setBounds(600, 30, 90, 20);
+
+        btnProfBackPage = new JButton("<--");
+        btnProfBackPage.setFocusable(false);
+        btnProfBackPage.addActionListener(this);
+        btnProfBackPage.setBounds(530, 30, 60, 20);
+
+        txtSetScore = new JTextField("12.75");
+        txtSetScore.setBounds(700, 30, 90, 20);
+        txtSetScore.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+                // to clear the prefix text
+                if (txtSetScore.getText().equals("12.75")){
+                    txtSetScore.setText("");
+                }
+            }
+        });
+        txtSetScore.setVisible(false);
+
+        btnIsHeadFaculty = new JButton("go to headFaculty page");
+        btnIsHeadFaculty.setFocusable(false);
+        btnIsHeadFaculty.addActionListener(this);
+        btnIsHeadFaculty.setBounds(600, 350, 170, 40);
+        btnIsHeadFaculty.setVisible(true);
+
+        btnProfReadObjections = new JButton("read");
+        btnProfReadObjections.setFocusable(false);
+        btnProfReadObjections.addActionListener(this);
+        btnProfReadObjections.setBounds(300, 30, 90, 40);
+
+        btnBack1 = new JButton("back");
+        btnBack1.addActionListener(this);
+        btnBack1.setBounds(10, 370, 70, 20);
+        btnBack1.setFocusable(false);
 
         panelProfessor.add(scrollPaneObjection);
+        panelProfessor.add(profUnitsscrollPaneObjection);
+        panelProfessor.add(profUnitListScrollPanel);
+        panelProfessor.add(btnIsHeadFaculty);
+        panelProfessor.add(btnBack1);
+        panelProfessor.add(btnProfReadObjections);
+        panelProfessor.add(btnProfChoose);
+        panelProfessor.add(btnProfBackPage);
+        panelProfessor.add(txtSetScore);
+
+
+        // panel head of faculty
+        ImageIcon headMenuBack = new ImageIcon("pic/headFaculty.jpg");
+        JLabel panelHeadFaculty = new JLabel(headMenuBack);
+
+        btnGoBackToProf = new JButton("back");
+        btnGoBackToProf.addActionListener(this);
+        btnGoBackToProf.setBounds(10, 370, 70, 20);
+        btnGoBackToProf.setFocusable(false);
+
+        btnOCTakingUnit = new JButton("");
+        btnOCTakingUnit.addActionListener(this);
+        btnOCTakingUnit.setBounds(560, 30, 180, 20);
+        btnOCTakingUnit.setFocusable(false);
+
+        btnMakeScoreFixed = new JButton("make all scores fixed");
+        btnMakeScoreFixed.addActionListener(this);
+        btnMakeScoreFixed.setBounds(560, 60, 180, 20);
+        btnMakeScoreFixed.setFocusable(false);
+
+        // units list
+        headFacultyUnits = new DefaultListModel();
+        jlistheadFacultyUnits = new JList(headFacultyUnits);
+        JScrollPane headfAcunitScrollPane = new JScrollPane(jlistheadFacultyUnits,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        headfAcunitScrollPane.setBounds(550, 100, 200, 250);
+
+        btnHeadFacultyChangeCapacity = new JButton("change capacity");
+        btnHeadFacultyChangeCapacity.addActionListener(this);
+        btnHeadFacultyChangeCapacity.setBounds(550, 380, 150, 20);
+        btnHeadFacultyChangeCapacity.setFocusable(false);
+
+        headFacNewCaps = new JTextField("new capacity");
+        headFacNewCaps.setBounds(550, 355, 150, 20);
+        headFacNewCaps.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+                // to clear the prefix text
+                if (headFacNewCaps.getText().equals("new capacity")){
+                    headFacNewCaps.setText("");
+                }
+            }
+        });
+
+        panelHeadFaculty.add(btnGoBackToProf);
+        panelHeadFaculty.add(btnOCTakingUnit);
+        panelHeadFaculty.add(btnMakeScoreFixed);
+        panelHeadFaculty.add(headfAcunitScrollPane);
+        panelHeadFaculty.add(btnHeadFacultyChangeCapacity);
+        panelHeadFaculty.add(headFacNewCaps);
+
+
 
 
         // panel Admin
@@ -114,7 +225,7 @@ public class CardLaout extends JFrame implements ActionListener {
 
         // add professor
         adminPrfFirstname = new JTextField("firstname");
-        adminPrfFirstname.setBounds(10, 30, 70, 20);
+        adminPrfFirstname.setBounds(10, 37, 70, 20);
         adminPrfFirstname.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -125,7 +236,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminPrfLastname = new JTextField("lastname");
-        adminPrfLastname.setBounds(85, 30, 70, 20);
+        adminPrfLastname.setBounds(85, 37, 70, 20);
         adminPrfLastname.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -133,7 +244,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminPrfUsername = new JTextField("username");
-        adminPrfUsername.setBounds(160, 30, 70, 20);
+        adminPrfUsername.setBounds(160, 37, 70, 20);
         adminPrfUsername.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -144,7 +255,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminPrfPassword = new JTextField("password");
-        adminPrfPassword.setBounds(235, 30, 70, 20);
+        adminPrfPassword.setBounds(235, 37, 70, 20);
         adminPrfPassword.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -156,13 +267,13 @@ public class CardLaout extends JFrame implements ActionListener {
         });
         btnAddProfessor = new JButton("add");
         btnAddProfessor.addActionListener(this);
-        btnAddProfessor.setBounds(310, 30, 70, 20);
+        btnAddProfessor.setBounds(310, 37, 70, 20);
         btnAddProfessor.setFocusable(false);
 
 
         // add student
         adminStuFirstname = new JTextField("firstname");
-        adminStuFirstname.setBounds(10, 80, 70, 20);
+        adminStuFirstname.setBounds(10, 90, 70, 20);
         adminStuFirstname.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -173,7 +284,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminStuLastname = new JTextField("lastname");
-        adminStuLastname.setBounds(85, 80, 70, 20);
+        adminStuLastname.setBounds(85, 90, 70, 20);
         adminStuLastname.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -181,7 +292,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminStuUsername = new JTextField("username");
-        adminStuUsername.setBounds(160, 80, 70, 20);
+        adminStuUsername.setBounds(160, 90, 70, 20);
         adminStuUsername.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -192,7 +303,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminStuPassword = new JTextField("password");
-        adminStuPassword.setBounds(235, 80, 70, 20);
+        adminStuPassword.setBounds(235, 90, 70, 20);
         adminStuPassword.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -203,7 +314,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminStuMajor = new JTextField("majorName"); //todo: make it combobox
-        adminStuMajor.setBounds(310, 80, 70, 20);
+        adminStuMajor.setBounds(310, 90, 70, 20);
         adminStuMajor.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -215,12 +326,12 @@ public class CardLaout extends JFrame implements ActionListener {
         });
         btnAddStudent = new JButton("add");
         btnAddStudent.addActionListener(this);
-        btnAddStudent.setBounds(385, 80, 70, 20);
+        btnAddStudent.setBounds(385, 90, 70, 20);
         btnAddStudent.setFocusable(false);
 
         // add faculty
         adminFacName = new JTextField("faculty name");
-        adminFacName.setBounds(10, 130, 100, 20);
+        adminFacName.setBounds(10, 145, 100, 20);
         adminFacName.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked(MouseEvent e){
@@ -231,7 +342,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminFacPrfFirstName = new JTextField("professor first name");
-        adminFacPrfFirstName.setBounds(115, 130, 130, 20);
+        adminFacPrfFirstName.setBounds(115, 145, 130, 20);
         adminFacPrfFirstName.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -239,7 +350,7 @@ public class CardLaout extends JFrame implements ActionListener {
             }
         });
         adminFacPrfLastName = new JTextField("professor last name");
-        adminFacPrfLastName.setBounds(250, 130, 130, 20);
+        adminFacPrfLastName.setBounds(250, 145, 130, 20);
         adminFacPrfLastName.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -248,8 +359,79 @@ public class CardLaout extends JFrame implements ActionListener {
         });
         btnAddFaculty = new JButton("add");
         btnAddFaculty.addActionListener(this);
-        btnAddFaculty.setBounds(385, 130, 70, 20);
+        btnAddFaculty.setBounds(385, 145, 70, 20);
         btnAddFaculty.setFocusable(false);
+
+        // add major
+        adminMajorName = new JTextField("major name");
+        adminMajorName.setBounds(10, 202, 100, 20);
+        adminMajorName.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+                // to clear the prefix text
+                if (adminMajorName.getText().equals("major name")){
+                    adminMajorName.setText("");
+                }
+            }
+        });
+        adminMajorFacultyID = new JTextField("faculty name");
+        adminMajorFacultyID.setBounds(120, 202, 130, 20);
+        adminMajorFacultyID.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (adminMajorFacultyID.getText().equals("faculty name")) adminMajorFacultyID.setText("");
+            }
+        });
+        btnAddMajor = new JButton("add");
+        btnAddMajor.addActionListener(this);
+        btnAddMajor.setBounds(270, 202, 70, 20);
+        btnAddMajor.setFocusable(false);
+
+
+        // add headOfFaculty
+        adminHeadFirst = new JTextField("first name");
+        adminHeadFirst.setBounds(10, 260, 90, 20);
+        adminHeadFirst.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+                // to clear the prefix text
+                if (adminHeadFirst.getText().equals("first name")){
+                    adminHeadFirst.setText("");
+                }
+            }
+        });
+        adminHeadLast = new JTextField("last name");
+        adminHeadLast.setBounds(110, 260, 90, 20);
+        adminHeadLast.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (adminHeadLast.getText().equals("last name")) adminHeadLast.setText("");
+            }
+        });
+        adminHeadFac = new JTextField("faculty name");
+        adminHeadFac.setBounds(210, 260, 90, 20);
+        adminHeadFac.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (adminHeadFac.getText().equals("faculty name")) adminHeadFac.setText("");
+            }
+        });
+        btnAddHeadFaculty = new JButton("set");
+        btnAddHeadFaculty.addActionListener(this);
+        btnAddHeadFaculty.setBounds(310, 260, 70, 20);
+        btnAddHeadFaculty.setFocusable(false);
+
+        btnBack = new JButton("BACK");
+        btnBack.addActionListener(this);
+        btnBack.setBounds(10, 370, 70, 20);
+        btnBack.setFocusable(false);
+
+        // professors list
+        adminProfeserList = new DefaultListModel();
+        JList jlistAdminProfessorList = new JList(adminProfeserList);
+        JScrollPane prfListscrollPane = new JScrollPane(jlistAdminProfessorList,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        prfListscrollPane.setBounds(550, 30, 200, 300);
 
 
 
@@ -268,16 +450,40 @@ public class CardLaout extends JFrame implements ActionListener {
         panelAdmin.add(btnAddStudent);
         panelAdmin.add(btnAddProfessor);
         panelAdmin.add(btnAddFaculty);
+        panelAdmin.add(btnAddMajor);
+        panelAdmin.add(adminMajorName);
+        panelAdmin.add(adminMajorFacultyID);
+        panelAdmin.add(prfListscrollPane);
+        panelAdmin.add(adminHeadFirst);
+        panelAdmin.add(adminHeadLast);
+        panelAdmin.add(adminHeadFac);
+        panelAdmin.add(btnAddHeadFaculty);
+        panelAdmin.add(btnBack);
+
+
+        // panel Student
+        ImageIcon studentMenuBack = new ImageIcon("pic/studentbichareh.jpg");
+        JLabel panelStudent = new JLabel(studentMenuBack);
+
 
 
 
         container.add("Panel Menu", panelMenu);
         container.add("Panel Professor", panelProfessor);
+        container.add("Panel HeadFaculty", panelHeadFaculty);
         container.add("Panel Admin", panelAdmin);
+        container.add("Panel Student", panelStudent);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == btnBack || e.getSource() == btnBack1) {
+            cardLayout.first(container);
+            // why do I have the feeling that socket should get close here? or else it's not secure
+        }
+        else if (e.getSource() == btnGoBackToProf){
+            cardLayout.previous(container);
+        }
         if (e.getSource() == btnLogin) {
             JSONObject jsonLogin = new JSONObject();
             jsonLogin.put("request", "login");
@@ -287,35 +493,61 @@ public class CardLaout extends JFrame implements ActionListener {
             try {
                 JSONObject jsonRes = client.sendRequestgetObject(jsonLogin);
                 if ((int) jsonRes.get("status") == 200) {
-                    txtPassword.setText("");
-                    txtUsername.setText("");
 
+                    // load page professor
                     if (Objects.equals(comboBoxRole.getSelectedItem(), "Professor")) {
                         cardLayout.next(container);
+
+                        if (isHeadFaculty(getProfessorID(txtUsername.getText()))){
+                            btnIsHeadFaculty.setVisible(true);
+                        } else {
+                            btnIsHeadFaculty.setVisible(false);
+                        }
+
                         // dump objections for this professor
+                        objectionList.removeAllElements();
                         JSONArray jsonObjection = selectObjbections();
                         for (int i=0; i<jsonObjection.toArray().length; i++){
                             JSONObject jsonObjectionObject = (JSONObject) jsonObjection.get(i);
-                            if (i==0) {
-                                pnlObjections.add(new JLabel("ObjectionID | type | gradeID(firstname lastname student + score"));
-                                System.out.println(jsonObjectionObject.toString());
-                            }
-                            for (int j=0; j<2; j++){
-                                if (j == 0) {
-                                    pnlObjections.add(new JLabel((String) jsonObjectionObject.get("objectionID") + jsonObjectionObject.get("type")));
-                                }
-                                else pnlObjections.add(new JButton("register")); //todo checkbox
-                            }
+                            JSONObject dataFromGradeID = getDataFromGradeID((int) jsonObjectionObject.get("gradeID"));
+                            objectionList.addElement(jsonObjectionObject.get("objectionID") + " "
+                                    + dataFromGradeID.get("studentName") + " " + dataFromGradeID.get("score")
+                                    + ": " + jsonObjectionObject.get("type"));
+                        }
+
+                        // load professor units
+                        professorUnitsList.removeAllElements();
+                        JSONArray jsonUnits = getProfessorUnit();
+                        for (int i=0; i<jsonUnits.toArray().length; i++){
+                            JSONObject jsonObject = (JSONObject) jsonUnits.get(i);
+                            professorUnitsList.addElement(jsonObject.get("unitID") + " " + jsonObject.get("unitName"));
                         }
                     }
 
+                    // load page admin
                     if (Objects.equals(comboBoxRole.getSelectedItem(), "Admin")) {
                         cardLayout.next(container);
                         cardLayout.next(container);
+                        cardLayout.next(container);
 
+                        // show professor list
+                        adminProfeserList.removeAllElements();
+                        JSONArray jsonArray = selectProfessor();
+                        for (int i=0; i<jsonArray.toArray().length; i++){
+                            JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                            adminProfeserList.addElement(jsonObject.get("id") + " "
+                                    + jsonObject.get("firstname") + " " + jsonObject.get("lastname"));
+                            //todo: add is headOfFacultyu function
+                        }
                     }
 
+                    // load page student
+                    if (Objects.equals(comboBoxRole.getSelectedItem(), "Student")) {
+                        cardLayout.last(container);
+                    }
 
+                    txtPassword.setText("password");
+                    txtUsername.setText("username");
                 }
                 else txtPassword.setText("");
             } catch (ClassNotFoundException | IOException ex) {
@@ -326,6 +558,8 @@ public class CardLaout extends JFrame implements ActionListener {
         if (e.getSource() == btnAddProfessor) {
             try {
                 addProfessor(adminPrfFirstname.getText(), adminPrfLastname.getText(), adminPrfUsername.getText(), adminPrfPassword.getText());
+                adminProfeserList.addElement(getProfessorID(adminPrfFirstname.getText(), adminPrfLastname.getText())
+                        + " "+ adminPrfFirstname.getText() + " " + adminPrfLastname.getText() + " ");
                 adminPrfFirstname.setText("firstname");
                 adminPrfLastname.setText("lastname");
                 adminPrfUsername.setText("username");
@@ -361,8 +595,164 @@ public class CardLaout extends JFrame implements ActionListener {
                 ex.printStackTrace();
             }
         }
-    }
+        if (e.getSource() == btnAddMajor) {
+            try {
+                addMajor(adminMajorName.getText(), getFacultyID(adminMajorFacultyID.getText()));
+                adminMajorName.setText("major name");
+                adminMajorFacultyID.setText("faculty name");
 
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnAddHeadFaculty) {
+            try {
+                setHeadFaculty(getProfessorID(adminHeadFirst.getText(), adminHeadLast.getText()),
+                        getFacultyID(adminHeadFac.getText()));
+                adminHeadFirst.setText("first name");
+                adminHeadLast.setText("last name");
+                adminHeadFac.setText("faculty name");
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnIsHeadFaculty) {
+            cardLayout.next(container);
+            try {
+                if (isTakingUnitAllowed()) btnOCTakingUnit.setText("close taking units");
+                else btnOCTakingUnit.setText("open taking units");
+
+                // load units of faculty
+                headFacultyUnits.removeAllElements();
+                JSONArray jsonArray = getUnitsOfFaculty();
+                for (int i=0; i<jsonArray.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                    headFacultyUnits.addElement(jsonObject.get("unitID") + " " + jsonObject.get("unitName") + " "
+                            + jsonObject.get("capacity"));
+                }
+
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnOCTakingUnit) {
+            if (btnOCTakingUnit.getText().equals("close taking units")) {
+                try {
+                    setTakingUnit(false);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                btnOCTakingUnit.setText("open taking units");
+            }
+            else {
+                try {
+                    setTakingUnit(true);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                btnOCTakingUnit.setText("close taking units");
+            }
+        }
+        if (e.getSource() == btnMakeScoreFixed) {
+            try {
+                registerAllScore();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnHeadFacultyChangeCapacity) {
+            try {
+                String text = (String) jlistheadFacultyUnits.getSelectedValue();
+                cahngeUnitCapacity(Integer.parseInt(text.split(" ")[0]),
+                        Integer.parseInt(headFacNewCaps.getText()));
+
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+            // load units of faculty
+            headFacultyUnits.removeAllElements();
+            JSONArray jsonArray = null;
+            try {
+                jsonArray = getUnitsOfFaculty();
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+            for (int i=0; i<jsonArray.toArray().length; i++){
+                JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                headFacultyUnits.addElement(jsonObject.get("unitID") + " " + jsonObject.get("unitName") + " "
+                        + jsonObject.get("capacity"));
+            }
+        }
+        if (e.getSource() == btnProfReadObjections) {
+            try {
+                String text = (String) jlistObjection.getSelectedValue();
+                answerObjections(Integer.parseInt(text.split(" ")[0]));
+
+                // dump objections for this professor
+                objectionList.removeAllElements();
+                JSONArray jsonObjection = selectObjbections();
+                for (int i=0; i<jsonObjection.toArray().length; i++){
+                    JSONObject jsonObjectionObject = (JSONObject) jsonObjection.get(i);
+                    JSONObject dataFromGradeID = getDataFromGradeID((int) jsonObjectionObject.get("gradeID"));
+                    objectionList.addElement(jsonObjectionObject.get("objectionID") + " "
+                            + dataFromGradeID.get("studentName") + " " + dataFromGradeID.get("score")
+                            + ": " + jsonObjectionObject.get("type"));
+                }
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        if (e.getSource() == btnProfChoose) {
+            try {
+                if (btnProfChoose.getText().equals("choose")) {
+                    String text = (String) jlistProfessorUnits.getSelectedValue();
+
+                    profUnitsscrollPaneObjection.setVisible(false);
+                    profUnitListScrollPanel.setVisible(true);
+
+                    // load grades
+                    studendOfUnitList.removeAllElements();
+                    JSONArray jsonArray = getStudentsOfaUnit(Integer.parseInt(text.split(" ")[0]));
+                    for (int i=0; i<jsonArray.toArray().length; i++){
+                        JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                        studendOfUnitList.addElement(jsonObject.get("gradeID") + " " + jsonObject.get("studentName")
+                                + " " + jsonObject.get("score") + " is it editable = " + jsonObject.get("isEditable"));
+                    }
+                    btnProfChoose.setText("set score");
+                    txtSetScore.setVisible(true);
+                } else {
+                    String text = (String) jlistStudentOfUnit.getSelectedValue();
+                    addScore(Double.valueOf(txtSetScore.getText()), Integer.parseInt(text.split(" ")[0]));
+
+                    // load grades
+                    studendOfUnitList.removeAllElements();
+                    JSONArray jsonArray = getStudentsOfaUnit(Integer.parseInt(text.split(" ")[0]));
+                    for (int i=0; i<jsonArray.toArray().length; i++){
+                        JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                        studendOfUnitList.addElement(jsonObject.get("gradeID") + " " + jsonObject.get("studentName")
+                                + " " + jsonObject.get("score") + " is it editable = " + jsonObject.get("isEditable"));
+                    }
+
+                }
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        if (e.getSource() == btnProfBackPage) {
+            profUnitsscrollPaneObjection.setVisible(true);
+            profUnitListScrollPanel.setVisible(false);
+
+            btnProfChoose.setText("choose");
+            txtSetScore.setVisible(false);
+        }
+
+    }
 
     private void answerObjections(int objectionID) throws IOException {
         JSONObject jsonData = new JSONObject();
@@ -383,6 +773,13 @@ public class CardLaout extends JFrame implements ActionListener {
         jsonData.put("gradeID", gradeID);
         jsonData.put("type", type);
         client.sendRequest(jsonData);
+    }
+
+    private JSONObject getDataFromGradeID(int gradeID) throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "getDataFromGradeID");
+        jsonData.put("gradeID", gradeID);
+        return (JSONObject) client.sendRequestgetObject(jsonData);
     }
 
     private void cahngeUnitCapacity(int unitID, int capacity) throws IOException {
@@ -447,12 +844,12 @@ public class CardLaout extends JFrame implements ActionListener {
         client.sendRequest(jsonData);
     }
 
-    private void selectProfessor() throws IOException, ClassNotFoundException {
+    private JSONArray selectProfessor() throws IOException, ClassNotFoundException {
         JSONObject jsonProf = new JSONObject();
         jsonProf.put("request", "select all professor");
 
 
-        System.out.println(client.sendRequestgetArray(jsonProf).toString());
+        return (JSONArray) client.sendRequestgetArray(jsonProf);
     }
 
     private int getMajorID (String name) throws IOException, ClassNotFoundException {
@@ -469,6 +866,15 @@ public class CardLaout extends JFrame implements ActionListener {
         jsonData.put("request", "get professorID");
         jsonData.put("firstname", firstname);
         jsonData.put("lastname", lastname);
+
+        return (int) client.sendRequestgetObject(jsonData).get("professorID");
+
+    }
+
+    private int getProfessorID (String username) throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "get professorID by username");
+        jsonData.put("username", username);
 
         return (int) client.sendRequestgetObject(jsonData).get("professorID");
 
@@ -503,19 +909,19 @@ public class CardLaout extends JFrame implements ActionListener {
         client.sendRequest(jsonData);
     }
 
-    private void getProfessorUnit() throws IOException, ClassNotFoundException {
+    private JSONArray getProfessorUnit() throws IOException, ClassNotFoundException {
         JSONObject jsonData = new JSONObject();
         jsonData.put("request", "get professorUnits");
 
         JSONArray jsonArray = client.sendRequestgetArray(jsonData);
-        System.out.println(jsonArray.toString());
+        return jsonArray;
     }
 
-    private void getStudentsOfaUnit(int unitID) throws IOException, ClassNotFoundException {
+    private JSONArray getStudentsOfaUnit(int unitID) throws IOException, ClassNotFoundException {
         JSONObject jsonData = new JSONObject();
         jsonData.put("request", "getStudentsOfaUnit");
         jsonData.put("unitID", unitID);
-        System.out.println(client.sendRequestgetArray(jsonData));
+        return client.sendRequestgetArray(jsonData);
     }
 
     private void getUnitsOfStudent() throws IOException, ClassNotFoundException {
@@ -526,11 +932,11 @@ public class CardLaout extends JFrame implements ActionListener {
 
     }
 
-    private void getUnitsOfMajor() throws IOException, ClassNotFoundException {
+    private JSONArray getUnitsOfFaculty() throws IOException, ClassNotFoundException {
         JSONObject jsonData = new JSONObject();
         jsonData.put("request", "getUnitsOfFaculty");
-        System.out.println(client.sendRequestgetArray(jsonData));
 
+        return client.sendRequestgetArray(jsonData);
     }
 
     private void takeUnits(int unitID) throws IOException {
@@ -539,13 +945,13 @@ public class CardLaout extends JFrame implements ActionListener {
         jsonData.put("unitID", unitID);
 
         client.sendRequest(jsonData);
-
     }
 
-    private void addScore (double score) throws IOException {
+    private void addScore (double score, int gradeID) throws IOException {
         JSONObject jsonData = new JSONObject();
         jsonData.put("request", "set score");
         jsonData.put("score", score);
+        jsonData.put("gradeID", gradeID);
 
         client.sendRequest(jsonData);
     }
@@ -555,5 +961,19 @@ public class CardLaout extends JFrame implements ActionListener {
         jsonData.put("unitID", unitID);
 
         client.sendRequest(jsonData);
+    }
+    private void registerAllScore () throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "set all scoreEditable false");
+
+        client.sendRequest(jsonData);
+    }
+
+    private boolean isHeadFaculty (int professorID) throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "is head faculty");
+        jsonData.put("professorID", professorID);
+
+        return (boolean) client.sendRequestgetObject(jsonData).get("isHead");
     }
 }
