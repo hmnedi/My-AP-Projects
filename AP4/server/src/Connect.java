@@ -426,6 +426,50 @@ public class Connect {
         return jsonArray;
     }
 
+    public JSONArray getMyChatStudent (String username) {
+        int studentID = getStudentIDbyUsername(username);
+
+        String sql = "SELECT professorID, text FROM Message WHERE studentID = " + studentID +  ";";
+
+        JSONArray jsonArray = new JSONArray();
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("Name", getNameFromProfessorID(rs.getInt("professorID")));
+                jsonData.put("message", rs.getString("text"));
+
+                jsonArray.add(jsonData);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return jsonArray;
+    }
+
+    public JSONArray getMyChatProfessor (String username) {
+        int professorID = getProfessorID(username);
+
+        String sql = "SELECT studentID, text FROM Message WHERE professorID = " + professorID +  ";";
+
+        JSONArray jsonArray = new JSONArray();
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("Name", getNameFromStudentID(rs.getInt("studentID")));
+                jsonData.put("message", rs.getString("text"));
+
+                jsonArray.add(jsonData);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return jsonArray;
+    }
+
     public JSONArray getObjections (int prfID) {
         String sql = "SELECT Objection.objectID, Objection.type, Grade.gradeID FROM Objection INNER JOIN Grade ON Object" +
                 "ion.gradeID = Grade.gradeID WHERE Grade.professorID = " + prfID + " AND Objection.isRead = false;";

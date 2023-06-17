@@ -111,7 +111,7 @@ class ClientHandler extends Thread {
                     outputStream.flush();
                 }
                 else if (req.equals("get studentID")){
-                    int id = new Connect().getProfessorID((String) jsonReq.get("firstname"), (String) jsonReq.get("lastname"));
+                    int id = new Connect().getStudentID((String) jsonReq.get("firstname"), (String) jsonReq.get("lastname"));
                     JSONObject jsonDataSend = new JSONObject();
                     jsonDataSend.put("studentID", id);
                     outputStream.writeObject(jsonDataSend);
@@ -294,6 +294,35 @@ class ClientHandler extends Thread {
                     JSONArray data = connect.getReportCardGrades(username);
                     outputStream.writeObject(data);
                     outputStream.flush();
+                }
+                else if (req.equals("getMyChat")) {
+                    Connect connect = new Connect();
+                    JSONArray data;
+
+                    if (role.equals("Student")) {
+                        data = connect.getMyChatStudent(username);
+                    } else {
+                        data = connect.getMyChatProfessor(username);
+                    }
+                    outputStream.writeObject(data);
+                    outputStream.flush();
+                }
+                else if (req.equals("sendMessage")) {
+                    Connect connect = new Connect();
+                    int studentID, professorID;
+
+                    if (role.equals("Student")) {
+                        studentID = connect.getStudentIDfromUsername(username);
+                        professorID = (int) jsonReq.get("professorID");
+                    } else {
+                        professorID = connect.getProfessorID(username);
+                        studentID = (int) jsonReq.get("studentID");
+                    }
+
+                    String sql = "INSERT INTO Message (studentID, professorID, text)"
+                            + " VALUES ("+ studentID + ", " + professorID + ", '" + jsonReq.get("text") + "');";
+
+                    connect.runQuery(sql);
                 }
                 else {
                     System.out.println("not ready");
