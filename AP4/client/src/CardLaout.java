@@ -17,17 +17,19 @@ public class CardLaout extends JFrame implements ActionListener {
     JScrollPane profUnitListScrollPanel, profUnitsscrollPaneObjection;
     JButton btnLogin, btnAddProfessor, btnAddStudent, btnAddFaculty, btnAddMajor, btnAddHeadFaculty, btnBack, btnBack1
             , btnIsHeadFaculty, btnGoBackToProf, btnOCTakingUnit, btnMakeScoreFixed, btnHeadFacultyChangeCapacity,
-            btnProfReadObjections, btnProfChoose, btnProfBackPage, btnTakeUnit, btnStudentObject, btnBack2;
+            btnProfReadObjections, btnProfChoose, btnProfBackPage, btnTakeUnit, btnStudentObject, btnBack2,
+            btnStudentSendMsg, btnProfessorSendMsg, btnPrfRefresh, btnStuRefresh;
     JTextField txtUsername, txtPassword, adminPrfFirstname, adminPrfLastname, adminPrfUsername, adminPrfPassword,
             adminStuFirstname, adminStuLastname, adminStuUsername, adminStuPassword, adminStuMajor, adminFacName,
             adminFacPrfFirstName, adminFacPrfLastName, adminMajorName, adminMajorFacultyID, adminHeadFirst,
-            adminHeadLast, adminHeadFac, headFacNewCaps, txtSetScore, txtStuObjection;
+            adminHeadLast, adminHeadFac, headFacNewCaps, txtSetScore, txtStuObjection, txtStudentMessage, txtPrfName,
+            txtProfessorMessage, txtStuName;
     JComboBox comboBoxRole;
     Container container;
     JList jlistheadFacultyUnits, jlistObjection, jlistProfessorUnits, jlistStudentOfUnit, jlistPickUnits,
-            jlistReportCard;
+            jlistReportCard, jlistStudentChat, jlistProfessorChat;
     DefaultListModel  adminProfeserList, headFacultyUnits, objectionList, professorUnitsList, studendOfUnitList,
-            pickUnitsList, reportCardList;
+            pickUnitsList, reportCardList, studentChatList, professorChatList;
 
     public CardLaout() throws IOException, ClassNotFoundException {
 
@@ -101,21 +103,21 @@ public class CardLaout extends JFrame implements ActionListener {
         jlistObjection = new JList(objectionList);
         JScrollPane scrollPaneObjection = new JScrollPane(jlistObjection,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPaneObjection.setBounds(30, 30, 260, 330);
+        scrollPaneObjection.setBounds(30, 70, 260, 290);
 
         // professor units
         professorUnitsList = new DefaultListModel();
         jlistProfessorUnits = new JList(professorUnitsList);
         profUnitsscrollPaneObjection = new JScrollPane(jlistProfessorUnits,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        profUnitsscrollPaneObjection.setBounds(530, 55, 250, 330);
+        profUnitsscrollPaneObjection.setBounds(550, 60, 240, 240);
 
         // list of students of a unit
         studendOfUnitList = new DefaultListModel();
         jlistStudentOfUnit = new JList(studendOfUnitList);
         profUnitListScrollPanel = new JScrollPane(jlistStudentOfUnit,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        profUnitListScrollPanel.setBounds(530, 55, 250, 330);
+        profUnitListScrollPanel.setBounds(550, 60, 240, 240);
         profUnitListScrollPanel.setVisible(false);
 
         btnProfChoose = new JButton("choose");
@@ -150,14 +152,51 @@ public class CardLaout extends JFrame implements ActionListener {
         btnProfReadObjections = new JButton("read");
         btnProfReadObjections.setFocusable(false);
         btnProfReadObjections.addActionListener(this);
-        btnProfReadObjections.setBounds(300, 30, 90, 40);
+        btnProfReadObjections.setBounds(200, 25, 90, 40);
 
         btnBack1 = new JButton("back");
         btnBack1.addActionListener(this);
         btnBack1.setBounds(10, 370, 70, 20);
         btnBack1.setFocusable(false);
 
+        // professor chatroom
+        professorChatList = new DefaultListModel();
+        jlistProfessorChat = new JList(professorChatList);
+        JScrollPane chatScrollProfessorPane = new JScrollPane(jlistProfessorChat,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        chatScrollProfessorPane.setBounds(300, 70, 220, 285);
+
+        btnProfessorSendMsg = new JButton("send");
+        btnProfessorSendMsg.addActionListener(this);
+        btnProfessorSendMsg.setBounds(430, 32, 70, 20);
+        btnProfessorSendMsg.setFocusable(false);
+
+        btnPrfRefresh = new JButton("refresh");
+        btnPrfRefresh.addActionListener(this);
+        btnPrfRefresh.setBounds(430, 10, 90, 20);
+        btnPrfRefresh.setFocusable(false);
+
+        txtProfessorMessage = new JTextField("your message...");
+        txtProfessorMessage.setBounds(300, 15, 120, 20);
+        txtProfessorMessage.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (txtProfessorMessage.getText().equals("your message...")) txtProfessorMessage.setText("");
+            }
+        });
+
+        txtStuName = new JTextField("firstname lastname");
+        txtStuName.setBounds(300, 45, 120, 20);
+        txtStuName.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (txtStuName.getText().equals("firstname lastname")) txtStuName.setText("");
+            }
+        });
+
+
         panelProfessor.add(scrollPaneObjection);
+        panelProfessor.add(chatScrollProfessorPane);
         panelProfessor.add(profUnitsscrollPaneObjection);
         panelProfessor.add(profUnitListScrollPanel);
         panelProfessor.add(btnIsHeadFaculty);
@@ -166,6 +205,10 @@ public class CardLaout extends JFrame implements ActionListener {
         panelProfessor.add(btnProfChoose);
         panelProfessor.add(btnProfBackPage);
         panelProfessor.add(txtSetScore);
+        panelProfessor.add(txtStuName);
+        panelProfessor.add(txtProfessorMessage);
+        panelProfessor.add(btnProfessorSendMsg);
+        panelProfessor.add(btnPrfRefresh);
 
 
         // panel head of faculty
@@ -471,7 +514,7 @@ public class CardLaout extends JFrame implements ActionListener {
         jlistPickUnits = new JList(pickUnitsList);
         JScrollPane pickingUnitsScroller = new JScrollPane(jlistPickUnits,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        pickingUnitsScroller.setBounds(20, 60, 150, 300);
+        pickingUnitsScroller.setBounds(20, 60, 200, 300);
 
         btnTakeUnit = new JButton("take");
         btnTakeUnit.addActionListener(this);
@@ -480,7 +523,7 @@ public class CardLaout extends JFrame implements ActionListener {
 
         btnStudentObject = new JButton("object");
         btnStudentObject.addActionListener(this);
-        btnStudentObject.setBounds(310, 32, 70, 20);
+        btnStudentObject.setBounds(350, 32, 70, 20);
         btnStudentObject.setFocusable(false);
 
         btnBack2 = new JButton("back");
@@ -489,7 +532,7 @@ public class CardLaout extends JFrame implements ActionListener {
         btnBack2.setFocusable(false);
 
         txtStuObjection = new JTextField("type of objection");
-        txtStuObjection.setBounds(220, 32, 90, 20);
+        txtStuObjection.setBounds(250, 32, 90, 20);
         txtStuObjection.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -502,15 +545,54 @@ public class CardLaout extends JFrame implements ActionListener {
         jlistReportCard = new JList(reportCardList);
         JScrollPane gradesScrollPane = new JScrollPane(jlistReportCard,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        gradesScrollPane.setBounds(220, 60, 150, 300);
+        gradesScrollPane.setBounds(250, 60, 150, 300);
 
+        // student chatroom
+        studentChatList = new DefaultListModel();
+        jlistStudentChat = new JList(studentChatList);
+        JScrollPane chatScrollStudentPane = new JScrollPane(jlistStudentChat,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        chatScrollStudentPane.setBounds(450, 60, 350, 300);
+
+        btnStudentSendMsg = new JButton("send");
+        btnStudentSendMsg.addActionListener(this);
+        btnStudentSendMsg.setBounds(730, 32, 70, 20);
+        btnStudentSendMsg.setFocusable(false);
+
+        btnStuRefresh = new JButton("refresh");
+        btnStuRefresh.addActionListener(this);
+        btnStuRefresh.setBounds(730, 10, 80, 20);
+        btnStuRefresh.setFocusable(false);
+
+        txtStudentMessage = new JTextField("your message...");
+        txtStudentMessage.setBounds(450, 32, 140, 20);
+        txtStudentMessage.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (txtStudentMessage.getText().equals("your message...")) txtStudentMessage.setText("");
+            }
+        });
+
+        txtPrfName = new JTextField("firstname lastname");
+        txtPrfName.setBounds(600, 32, 120, 20);
+        txtPrfName.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (txtPrfName.getText().equals("firstname lastname")) txtPrfName.setText("");
+            }
+        });
 
         panelStudent.add(pickingUnitsScroller);
         panelStudent.add(gradesScrollPane);
+        panelStudent.add(chatScrollStudentPane);
         panelStudent.add(btnTakeUnit);
         panelStudent.add(btnStudentObject);
         panelStudent.add(txtStuObjection);
         panelStudent.add(btnBack2);
+        panelStudent.add(txtStudentMessage);
+        panelStudent.add(btnStudentSendMsg);
+        panelStudent.add(txtPrfName);
+        panelStudent.add(btnStuRefresh);
 
 
 
@@ -527,7 +609,7 @@ public class CardLaout extends JFrame implements ActionListener {
             cardLayout.first(container);
             // why do I have the feeling that socket should get close here? or else it's not secure
         }
-        else if (e.getSource() == btnGoBackToProf){
+        if (e.getSource() == btnGoBackToProf){
             cardLayout.previous(container);
         }
         if (e.getSource() == btnLogin) {
@@ -568,6 +650,16 @@ public class CardLaout extends JFrame implements ActionListener {
                             JSONObject jsonObject = (JSONObject) jsonUnits.get(i);
                             professorUnitsList.addElement(jsonObject.get("unitID") + " " + jsonObject.get("unitName"));
                         }
+
+                        // load chats
+                        professorChatList.removeAllElements();
+                        JSONArray jsonArray2 = getMyChat();
+                        for (int i=0; i<jsonArray2.toArray().length; i++){
+                            JSONObject jsonObject = (JSONObject) jsonArray2.get(i);
+                            professorChatList.addElement("contact: " + jsonObject.get("Name") + " - text: "
+                                    + jsonObject.get("message"));
+                        }
+
                     }
 
                     // load page admin
@@ -582,8 +674,8 @@ public class CardLaout extends JFrame implements ActionListener {
                         for (int i=0; i<jsonArray.toArray().length; i++){
                             JSONObject jsonObject = (JSONObject) jsonArray.get(i);
                             adminProfeserList.addElement(jsonObject.get("id") + " "
-                                    + jsonObject.get("firstname") + " " + jsonObject.get("lastname"));
-                            //todo: add is headOfFacultyu function
+                                    + jsonObject.get("firstname") + " " + jsonObject.get("lastname")
+                                    + " isHead: " + isHeadFaculty((int) jsonObject.get("id")));
                         }
                     }
 
@@ -606,6 +698,16 @@ public class CardLaout extends JFrame implements ActionListener {
                             JSONObject jsonObject = (JSONObject) jsonArray1.get(i);
                             reportCardList.addElement(jsonObject.get("gradeID") + " " + jsonObject.get("unitName")
                                     + " " + jsonObject.get("score") + " " + jsonObject.get("professorName"));
+                        }
+
+                        // todo: show each message is for who
+                        // load chats
+                        studentChatList.removeAllElements();
+                        JSONArray jsonArray2 = getMyChat();
+                        for (int i=0; i<jsonArray2.toArray().length; i++){
+                            JSONObject jsonObject = (JSONObject) jsonArray2.get(i);
+                            studentChatList.addElement("contact: " + jsonObject.get("Name") + " - text: "
+                                    + jsonObject.get("message"));
                         }
 
                         // check if taking unit is allowed
@@ -634,6 +736,16 @@ public class CardLaout extends JFrame implements ActionListener {
                 adminPrfLastname.setText("lastname");
                 adminPrfUsername.setText("username");
                 adminPrfPassword.setText("password");
+
+                // show professor list
+                adminProfeserList.removeAllElements();
+                JSONArray jsonArray = selectProfessor();
+                for (int i=0; i<jsonArray.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                    adminProfeserList.addElement(jsonObject.get("id") + " "
+                            + jsonObject.get("firstname") + " " + jsonObject.get("lastname")
+                            + " isHead: " + isHeadFaculty((int) jsonObject.get("id")));
+                }
 
             } catch (IOException | ClassNotFoundException ex) {
                 ex.printStackTrace();
@@ -682,6 +794,16 @@ public class CardLaout extends JFrame implements ActionListener {
                 adminHeadFirst.setText("first name");
                 adminHeadLast.setText("last name");
                 adminHeadFac.setText("faculty name");
+
+                // show professor list
+                adminProfeserList.removeAllElements();
+                JSONArray jsonArray = selectProfessor();
+                for (int i=0; i<jsonArray.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                    adminProfeserList.addElement(jsonObject.get("id") + " "
+                            + jsonObject.get("firstname") + " " + jsonObject.get("lastname")
+                            + " isHead: " + isHeadFaculty((int) jsonObject.get("id")));
+                }
 
             } catch (IOException | ClassNotFoundException ex) {
                 ex.printStackTrace();
@@ -858,6 +980,79 @@ public class CardLaout extends JFrame implements ActionListener {
                 ex.printStackTrace();
             }
         }
+        if (e.getSource() == btnStudentSendMsg) {
+            try {
+                String firstname = txtPrfName.getText().split(" ")[0];
+                String lastname = txtPrfName.getText().split(" ")[1];
+                sendMessageToProfessor(getProfessorID(firstname, lastname), txtStudentMessage.getText());
+                txtPrfName.setText("firstname lastname");
+                txtStudentMessage.setText("your message...");
+
+                // load chats
+                studentChatList.removeAllElements();
+                JSONArray jsonArray2 = getMyChat();
+                for (int i=0; i<jsonArray2.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray2.get(i);
+                    studentChatList.addElement("contact: " + jsonObject.get("Name") + " - text: "
+                            + jsonObject.get("message"));
+                }
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnStuRefresh) {
+            try {
+                // load chats
+                studentChatList.removeAllElements();
+                JSONArray jsonArray2 = getMyChat();
+                for (int i=0; i<jsonArray2.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray2.get(i);
+                    studentChatList.addElement("contact: " + jsonObject.get("Name") + " - text: "
+                            + jsonObject.get("message"));
+                }
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnProfessorSendMsg) {
+            try {
+                String firstname = txtStuName.getText().split(" ")[0];
+                String lastname = txtStuName.getText().split(" ")[1];
+                System.out.println(getStudentID("hooman", "edraki"));
+                sendMessageToStudent(getStudentID(firstname, lastname), txtProfessorMessage.getText());
+                txtStuName.setText("firstname lastname");
+                txtProfessorMessage.setText("your message...");
+
+                // load chats
+                professorChatList.removeAllElements();
+                JSONArray jsonArray2 = getMyChat();
+                for (int i=0; i<jsonArray2.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray2.get(i);
+                    professorChatList.addElement("contact: " + jsonObject.get("Name") + " - text: "
+                            + jsonObject.get("message"));
+                }
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (e.getSource() == btnPrfRefresh) {
+            try {
+                // load chats
+                professorChatList.removeAllElements();
+                JSONArray jsonArray2 = getMyChat();
+                for (int i=0; i<jsonArray2.toArray().length; i++){
+                    JSONObject jsonObject = (JSONObject) jsonArray2.get(i);
+                    professorChatList.addElement("contact: " + jsonObject.get("Name") + " - text: "
+                            + jsonObject.get("message"));
+                }
+
+            } catch (IOException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
 
     }
 
@@ -867,6 +1062,31 @@ public class CardLaout extends JFrame implements ActionListener {
         jsonData.put("objectionID", objectionID);
 
         client.sendRequest(jsonData);
+    }
+
+    private void sendMessageToProfessor(int professorID, String text) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "sendMessage");
+        jsonData.put("text", text);
+        jsonData.put("professorID", professorID);
+
+        client.sendRequest(jsonData);
+    }
+
+    private void sendMessageToStudent(int studentID, String text) throws IOException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "sendMessage");
+        jsonData.put("text", text);
+        jsonData.put("studentID", studentID);
+
+        client.sendRequest(jsonData);
+    }
+
+    private JSONArray getMyChat() throws IOException, ClassNotFoundException {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("request", "getMyChat");
+
+        return client.sendRequestgetArray(jsonData);
     }
 
     private JSONArray selectObjbections() throws IOException, ClassNotFoundException {
