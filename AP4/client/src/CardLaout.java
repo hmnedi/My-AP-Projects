@@ -714,6 +714,9 @@ public class CardLaout extends JFrame implements ActionListener {
                         if (!isTakingUnitAllowed()) {
                             btnTakeUnit.setEnabled(false);
                         }
+                        else {
+                            btnTakeUnit.setEnabled(true);
+                        }
 
 
                     }
