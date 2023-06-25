@@ -4,12 +4,6 @@ import org.json.simple.JSONObject;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Scanner;
-
 public class Main {
     public static void main(String[] args) throws IOException {
         
@@ -169,8 +163,23 @@ class ClientHandler extends Thread {
                     outputStream.flush();
                 }
                 else if (req.equals("getUnitsOfStudent")) {
-                    JSONArray jsonData = new Connect().getUnitsOfStudent(username);
-                    outputStream.writeObject(jsonData);
+                    JSONArray jsonVahedPassShode = new Connect().getUnitsOfStudent(username);
+                    JSONArray jsonKollUnitFacult = new Connect().getUnitsOfFacultyForStudent(username);
+                    JSONArray jsonMotamam = new JSONArray();
+                    for (int i=0; i<jsonVahedPassShode.toArray().length; i++){
+                        JSONObject pass = (JSONObject) jsonVahedPassShode.get(i);
+
+                        JSONObject jsonData = new JSONObject();
+                        for (int j=0; j<jsonKollUnitFacult.toArray().length;j++){
+                            JSONObject kolli = (JSONObject) jsonKollUnitFacult.get(j);
+                            if (pass.get("unitID") != kolli.get("unitID")) {
+                                jsonData.put("unitID", kolli.get("unitID"));
+                                jsonData.put("unitName", new Connect().getNameFromUnitID((int) kolli.get("unitID")));
+                                jsonMotamam.add(jsonData);
+                            }
+                        }
+                    }
+                    outputStream.writeObject(jsonMotamam);
                     outputStream.flush();
                 }
                 else if (req.equals("takeUnit")) {

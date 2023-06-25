@@ -382,8 +382,7 @@ public class Connect {
         int facultyID = getFacultyIdFromStudent(username);
 
 //        String sql = "SELECT unitID, unitName FROM Unit WHERE facultyID = " + facultyID +  ";";
-        String sql = "SELECT Unit.unitID, Unit.unitName FROM Unit LEFT JOIN Grade ON Unit.unitID = Grade.unitID " +
-                "WHERE Grade.unitID IS NULL AND Unit.facultyID = " + facultyID + ";";
+        String sql = "SELECT unitID FROM Grade WHERE studentID = " + getStudentIDfromUsername(username) + ";";
 
         JSONArray jsonArray = new JSONArray();
         try (Connection conn = this.connect();
@@ -391,9 +390,8 @@ public class Connect {
              ResultSet rs    = stmt.executeQuery(sql)){
             while (rs.next()) {
                 JSONObject jsonData = new JSONObject();
-                jsonData.put("unitName", rs.getString("unitName"));
+//                jsonData.put("unitName", getNameFromUnitID(rs.getInt("unitID")));
                 jsonData.put("unitID", rs.getInt("unitID"));
-
                 jsonArray.add(jsonData);
             }
         } catch (SQLException e) {
@@ -495,6 +493,30 @@ public class Connect {
     public JSONArray getUnitsOfFaculty (String username) {
 
         int facultyID = getFacultyIdFromProfessor(username);
+
+        String sql = "SELECT * FROM Unit WHERE facultyID = " + facultyID +  ";";
+        JSONArray jsonArray = new JSONArray();
+
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            while (rs.next()) {
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("unitName", rs.getString("unitName"));
+                jsonData.put("unitID", rs.getInt("unitID"));
+                jsonData.put("capacity", rs.getInt("capacity"));
+
+                jsonArray.add(jsonData);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return jsonArray;
+
+    }
+    public JSONArray getUnitsOfFacultyForStudent (String username) {
+
+        int facultyID = getFacultyIdFromStudent(username);
 
         String sql = "SELECT * FROM Unit WHERE facultyID = " + facultyID +  ";";
         JSONArray jsonArray = new JSONArray();
