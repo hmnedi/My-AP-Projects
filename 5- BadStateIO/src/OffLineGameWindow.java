@@ -60,6 +60,7 @@ public class OffLineGameWindow extends JFrame {
 
     private void actualRender(PlayState state,Graphics2D g){
         Country[] countries = state.getCountries();
+        int[] alliedCountryIndex = state.getAlliedCountryIndex();
 
         g.clearRect(0, 0, 960, 540);
         g.drawImage(background,0,27,getWidth(),getHeight()-27,null);
@@ -72,7 +73,7 @@ public class OffLineGameWindow extends JFrame {
          * this is for rendering the countries
          */
         for(int i = 0;i<4;i++){
-            switch (i) {
+            switch (alliedCountryIndex[i]) {
                 case 0 -> g.setColor(Color.BLUE);
                 case 1 -> g.setColor(Color.ORANGE);
                 case 2 -> g.setColor(Color.GREEN);
@@ -87,6 +88,21 @@ public class OffLineGameWindow extends JFrame {
             g.drawString(String.valueOf(countries[i].getArmy()),countries[i].getX()+(countries[i].WIDTH)/2,countries[i].getY()+(countries[i].HEIGHT)/2);
 
         }
+
+        /*
+        * rendering the health bar
+        */
+        g.setColor(Color.BLUE);
+        g.fillRect(300, 40,(4*countries[0].army),20);
+        g.setColor(Color.ORANGE);
+        g.fillRect(300+(4*countries[0].army), 40,(4*countries[1].army),20);
+        g.setColor(Color.GREEN);
+        g.fillRect(300+(4*countries[1].army)+(4*countries[0].army), 40,(4*countries[2].army),20);
+        g.setColor(Color.PINK);
+        g.fillRect(300+(4*countries[2].army)+(4*countries[1].army)+(4*countries[0].army), 40,(4*countries[3].army),20);
+
+
+
 
     }
 
