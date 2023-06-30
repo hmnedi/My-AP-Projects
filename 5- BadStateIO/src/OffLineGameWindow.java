@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 
 public class OffLineGameWindow extends JFrame {
-//    MyMouseListener mouse;
+    MyMouseListener mouse;
     BufferStrategy bs;
     BufferedImage background;
     Canvas canvas;
@@ -25,10 +25,11 @@ public class OffLineGameWindow extends JFrame {
         bs = getBufferStrategy();
         loadImages();
 
-//        mouse = new MyMouseListener("offline");
-//        addMouseListener(mouse);
-//        addMouseMotionListener(mouse);
         setIconImage(ImageIO.read(new File("icon.png")));
+
+        mouse = new MyMouseListener("offline");
+        addMouseListener(mouse);
+        addMouseMotionListener(mouse);
 
     }
 
@@ -66,19 +67,17 @@ public class OffLineGameWindow extends JFrame {
         g.drawImage(background,0,27,getWidth(),getHeight()-27,null);
 
 
-
-
-
         /*
          * this is for rendering the countries
          */
         for(int i = 0;i<4;i++){
             switch (alliedCountryIndex[i]) {
-                case 0 -> g.setColor(Color.BLUE);
-                case 1 -> g.setColor(Color.ORANGE);
-                case 2 -> g.setColor(Color.GREEN);
-                case 3 -> g.setColor(Color.PINK);
+                case 0 -> g.setColor(Color.BLUE); // 300x 185y
+                case 1 -> g.setColor(Color.ORANGE); // 300x 385y
+                case 2 -> g.setColor(Color.GREEN); // 700x 185y
+                case 3 -> g.setColor(Color.PINK); // 700x 385
             }
+            // drawPolygon(int[] xPoints, int[] yPoints, int numPoint); // this could make shapes with points
             g.fillRect(countries[i].getX(), countries[i].getY(),countries[i].WIDTH,countries[i].HEIGHT);
             g.drawImage(countries[i].getImage(),countries[i].getX(),countries[i].getY(),countries[i].WIDTH,countries[i].HEIGHT,null);
             g.draw(countries[i].getHitBox()); //todo: hide this and make it circle
@@ -93,16 +92,48 @@ public class OffLineGameWindow extends JFrame {
         * rendering the health bar
         */
         g.setColor(Color.BLUE);
-        g.fillRect(300, 40,(4*countries[0].army),20);
+        g.fillRect(300-countries[2].army, 50,(4*countries[0].army),10);
         g.setColor(Color.ORANGE);
-        g.fillRect(300+(4*countries[0].army), 40,(4*countries[1].army),20);
+        g.fillRect(300-countries[2].army+(4*countries[0].army), 50,(4*countries[1].army),10);
         g.setColor(Color.GREEN);
-        g.fillRect(300+(4*countries[1].army)+(4*countries[0].army), 40,(4*countries[2].army),20);
+        g.fillRect(300-countries[2].army+(4*countries[1].army)+(4*countries[0].army), 50,(4*countries[2].army),10);
         g.setColor(Color.PINK);
-        g.fillRect(300+(4*countries[2].army)+(4*countries[1].army)+(4*countries[0].army), 40,(4*countries[3].army),20);
+        g.fillRect(300-countries[2].army+(4*countries[2].army)+(4*countries[1].army)+(4*countries[0].army), 50,(4*countries[3].army),10);
+
+        /*
+        * draw line while dragging the mouse
+         */
+        g.setColor(Color.BLACK);
+        g.drawLine(mouse.mousePressX, mouse.mousePressY, mouse.mouseX, mouse.mouseY);
 
 
+        /*
+        * shoot coutnry
+        */
+        //todo: age can shoot bood bebin kodom country hastesh bad shooting oon ro faal kon bad canshoot ro khamoosh
+        if (MyMouseListener.canShoot){
+            countries[0].isShooting = true;
+//            g.fillOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
+//            g.setColor(Color.BLACK);
+//            g.drawOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
+//            countries[alliedCountryIndex[mouse.shooterID.get(0)]].shoot(countries[mouse.countryTarget].getX(), countries[mouse.countryTarget].getY());
 
+            // todo: loop for shooterID
+            for(NormalBullet bullet:countries[mouse.shooterID.get(0)].getBullets()) {
+//                g.drawImage(bullet.getImage(), bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT, null);
+                switch (alliedCountryIndex[mouse.shooterID.get(0)]) {
+                    case 0 -> g.setColor(Color.BLUE); // 300x 185y
+                    case 1 -> g.setColor(Color.ORANGE); // 300x 385y
+                    case 2 -> g.setColor(Color.GREEN); // 700x 185y
+                    case 3 -> g.setColor(Color.PINK); // 700x 385
+                }
+                g.fillOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
+//                g.fillOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
+                g.setColor(Color.BLACK);
+                g.drawOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
+//                g.drawOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
+            }
+        }
 
     }
 
