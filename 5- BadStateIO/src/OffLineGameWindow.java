@@ -107,33 +107,38 @@ public class OffLineGameWindow extends JFrame {
         g.drawLine(mouse.mousePressX, mouse.mousePressY, mouse.mouseX, mouse.mouseY);
 
 
-        /*
-        * shoot coutnry
-        */
-        //todo: age can shoot bood bebin kodom country hastesh bad shooting oon ro faal kon bad canshoot ro khamoosh
-        if (MyMouseListener.canShoot){
-            countries[0].isShooting = true;
-//            g.fillOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
-//            g.setColor(Color.BLACK);
-//            g.drawOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
-//            countries[alliedCountryIndex[mouse.shooterID.get(0)]].shoot(countries[mouse.countryTarget].getX(), countries[mouse.countryTarget].getY());
+        
 
-            // todo: loop for shooterID
-            for(NormalBullet bullet:countries[mouse.shooterID.get(0)].getBullets()) {
-//                g.drawImage(bullet.getImage(), bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT, null);
-                switch (alliedCountryIndex[mouse.shooterID.get(0)]) {
-                    case 0 -> g.setColor(Color.BLUE); // 300x 185y
-                    case 1 -> g.setColor(Color.ORANGE); // 300x 385y
-                    case 2 -> g.setColor(Color.GREEN); // 700x 185y
-                    case 3 -> g.setColor(Color.PINK); // 700x 385
+        /*
+        * shoot country
+        */
+        if (MyMouseListener.canShoot){
+            for(int i=0; i<mouse.shooterID.size(); i++){
+                countries[mouse.shooterID.get(i)].isShooting = true;
+                System.out.println(" sfs" + mouse.shooterID.get(i));
+            }
+            MyMouseListener.canShoot = false;
+        }
+
+
+        for(int i=0; i<4; i++){
+            if ( countries[i].getBullets().size() > 0){
+                for(NormalBullet bullet:countries[i].getBullets()) {
+//                    System.out.println("haha f");
+                    switch (alliedCountryIndex[i]) {
+                        case 0 -> g.setColor(Color.BLUE); // 300x 185y
+                        case 1 -> g.setColor(Color.ORANGE); // 300x 385y
+                        case 2 -> g.setColor(Color.GREEN); // 700x 185y
+                        case 3 -> g.setColor(Color.PINK); // 700x 385
+                    }
+                    g.fillOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
+                    g.setColor(Color.BLACK);
+                    g.drawOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
                 }
-                g.fillOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
-//                g.fillOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
-                g.setColor(Color.BLACK);
-                g.drawOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
-//                g.drawOval(mouse.mousePressX, mouse.mousePressY, 20, 20);
             }
         }
+
+
 
     }
 

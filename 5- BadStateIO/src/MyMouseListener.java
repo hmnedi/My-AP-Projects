@@ -60,11 +60,18 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
         mouseY = e.getY();
         System.out.println("Mouse is Released x: " + e.getX() + " y: " + e.getY());
 
+
+
         // shoot then clear selection
-        System.out.println(shooterID.toString() + " attak " + countryTarget);
         if (!shooterID.isEmpty() && countryTarget != -1){
             canShoot = true;
         }
+        else if (!shooterID.isEmpty()){
+            countryTarget = shooterID.get(shooterID.size()-1);
+            shooterID.remove(shooterID.size()-1);
+            canShoot = true;
+        }
+        System.out.println(shooterID.toString() + " attak " + countryTarget);
     }
 
     @Override
@@ -96,15 +103,17 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 if (mouseY > 100 && mouseY < 245) {
 //                    System.out.println("blue");
                     if (shooterID.get(0)!=0){
-                        if (shooterID.get(0) == PlayState.alliedCountryIndex[0]) shooterID.add(0);
-                        else countryTarget = 0;
+                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[0] && !shooterID.contains(0)) shooterID.add(0);
+                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[0]) countryTarget = 0;
+
                     }
                 }
                 if (mouseY > 300 && mouseY < 450) {
 //                    System.out.println("orange");
                     if (shooterID.get(0)!=1){
-                        if (shooterID.get(0) == PlayState.alliedCountryIndex[1]) shooterID.add(1);
-                        else countryTarget = 1;
+                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[1] && !shooterID.contains(1)) shooterID.add(1);
+                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[1]) countryTarget = 1;
+
                     }
                 }
             }
@@ -112,15 +121,16 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 if (mouseY > 100 && mouseY < 245){
 //                    System.out.println("green");
                     if (shooterID.get(0)!=2){
-                        if (shooterID.get(0) == PlayState.alliedCountryIndex[2]) shooterID.add(2);
-                        else countryTarget = 2;
+                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[2] && !shooterID.contains(2)) shooterID.add(2);
+                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[2]) countryTarget = 2;
                     }
                 }
                 if (mouseY > 300 && mouseY < 450) {
 //                    System.out.println("pink");
                     if (shooterID.get(0)!=3){
-                        if (shooterID.get(0) == PlayState.alliedCountryIndex[3]) shooterID.add(3);
-                        else countryTarget = 3;
+                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[3] && !shooterID.contains(3)) shooterID.add(3);
+                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[3]) countryTarget = 3;
+
                     }
                 }
             }
