@@ -13,7 +13,7 @@ public class OffLineGameWindow extends JFrame {
     BufferStrategy bs;
     BufferedImage background;
     Canvas canvas;
-
+    int[] healthbar = new int[4];
     public OffLineGameWindow() throws IOException {
         setSize(new Dimension(960,540));
         setLocationRelativeTo(null);
@@ -77,6 +77,8 @@ public class OffLineGameWindow extends JFrame {
                 case 2 -> g.setColor(Color.GREEN); // 700x 185y
                 case 3 -> g.setColor(Color.PINK); // 700x 385
             }
+
+
             // drawPolygon(int[] xPoints, int[] yPoints, int numPoint); // this could make shapes with points
             g.fillRect(countries[i].getX(), countries[i].getY(),countries[i].WIDTH,countries[i].HEIGHT);
             g.drawImage(countries[i].getImage(),countries[i].getX(),countries[i].getY(),countries[i].WIDTH,countries[i].HEIGHT,null);
@@ -89,16 +91,37 @@ public class OffLineGameWindow extends JFrame {
         }
 
         /*
-        * rendering the health bar
-        */
-        g.setColor(Color.BLUE);
-        g.fillRect(300-countries[2].army, 50,(4*countries[0].army),10);
-        g.setColor(Color.ORANGE);
-        g.fillRect(300-countries[2].army+(4*countries[0].army), 50,(4*countries[1].army),10);
-        g.setColor(Color.GREEN);
-        g.fillRect(300-countries[2].army+(4*countries[1].army)+(4*countries[0].army), 50,(4*countries[2].army),10);
-        g.setColor(Color.PINK);
-        g.fillRect(300-countries[2].army+(4*countries[2].army)+(4*countries[1].army)+(4*countries[0].army), 50,(4*countries[3].army),10);
+         * rendering the health bar
+         */
+        String aliveCountries = "";
+        for(int j=0; j<4; j++){
+            if (!aliveCountries.contains(String.valueOf(alliedCountryIndex[j]))) aliveCountries += String.valueOf(alliedCountryIndex[j]);
+
+        }
+        for(int i=0; i<aliveCountries.length(); i++){
+            int indexCountry = aliveCountries.charAt(i) - '0';
+            int armyTeams = 0;
+            for(int j=0; j<4; j++){
+                if (alliedCountryIndex[j] == indexCountry) {
+                    armyTeams += countries[j].army;
+                }
+            }
+            healthbar[i] = armyTeams;
+
+            switch (alliedCountryIndex[indexCountry]) {
+                case 0 -> g.setColor(Color.BLUE); // 300x 185y
+                case 1 -> g.setColor(Color.ORANGE); // 300x 385y
+                case 2 -> g.setColor(Color.GREEN); // 700x 185y
+                case 3 -> g.setColor(Color.PINK); // 700x 385
+            }
+            switch (i) {
+                case 0 -> g.fillRect(300-healthbar[2], 50, (4 * healthbar[i]), 10);
+                case 1 -> g.fillRect(300-healthbar[2]+(4 * healthbar[0]), 50, (4 * healthbar[i]), 10);
+                case 2 -> g.fillRect(300-healthbar[2]+(4 * healthbar[1])+(4 * healthbar[0]), 50, (4 * healthbar[i]), 10);
+                case 3 -> g.fillRect(300-healthbar[2]+(4 * healthbar[2])+(4 * healthbar[1])+(4 * healthbar[0]), 50, ((4 * healthbar[i])),10);
+            }
+        }
+
 
         /*
         * draw line while dragging the mouse
@@ -106,8 +129,6 @@ public class OffLineGameWindow extends JFrame {
         g.setColor(Color.BLACK);
         g.drawLine(mouse.mousePressX, mouse.mousePressY, mouse.mouseX, mouse.mouseY);
 
-
-        
 
         /*
         * shoot country
