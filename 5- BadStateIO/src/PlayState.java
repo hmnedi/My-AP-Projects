@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,9 +7,8 @@ import java.util.Random;
 public class PlayState extends GameState{
 
     public static Country[] counteries = new Country[4];
-    public static int[] alliedCountryIndex = new int[4];
-
     public long lastPeopleUpdate;
+    public long lastMoveBullets;
     MyMouseListener mouse;
 
     public PlayState(MyMouseListener mouse) {
@@ -19,17 +19,19 @@ public class PlayState extends GameState{
         counteries[2] = new Country(600, 100);
         counteries[2].army = 2;
         counteries[3] = new Country(600, 300);
+
         for(int i=0; i<4;i++){
             counteries[i].setImage("country" + (i+1) + ".png");
-            alliedCountryIndex[i] = i;
+            switch (i) {
+                case 0 -> counteries[i].setColor(Color.BLUE);
+                case 1 -> counteries[i].setColor(Color.ORANGE);
+                case 2 -> counteries[i].setColor(Color.GREEN);
+                case 3 -> counteries[i].setColor(Color.PINK);
+            }
         }
         lastPeopleUpdate = System.currentTimeMillis();
       gameOver = false;
       won = false;
-    }
-
-    public int[] getAlliedCountryIndex() {
-        return alliedCountryIndex;
     }
     public Country[] getCounteries() {
         return counteries;
@@ -66,7 +68,7 @@ public class PlayState extends GameState{
         for(int i=0; i<4; i++){
             if (counteries[i].isShooting && counteries[i].army > 0){
                 for(int j=0; j<counteries[i].army; j++){
-                    if (System.currentTimeMillis() - counteries[i].LAST_SHOOT_TIME >= 200){
+                    if (System.currentTimeMillis() - counteries[i].LAST_SHOOT_TIME >= 100){
                         counteries[i].addBullet(new NormalBullet(counteries[i].getX()+(Country.WIDTH/2),counteries[i].getY()+(Country.HEIGHT/2)));
                         counteries[i].army -= 1;
                         counteries[i].LAST_SHOOT_TIME = System.currentTimeMillis();
@@ -83,28 +85,28 @@ public class PlayState extends GameState{
                 for(Iterator<NormalBullet> bulletIterator = counteries[i].getBullets().iterator();bulletIterator.hasNext();){
                     NormalBullet bullet = bulletIterator.next();
 
-                    // todo: make thread for each sets of attacks
-                    if (i == 0 && mouse.countryTarget == 2) bullet.moveRight();
-                    else if (i == 2 && mouse.countryTarget == 0) bullet.moveLeft();
-                    else if (i == 0 && mouse.countryTarget == 1) bullet.moveDown(0);
-                    else if (i == 1 && mouse.countryTarget == 0) bullet.moveUp(0);
-                    else if (i == 3 && mouse.countryTarget == 2) bullet.moveUp(0);
-                    else if (i == 2 && mouse.countryTarget == 3) bullet.moveDown(0);
-                    else if (i == 3 && mouse.countryTarget == 1) bullet.moveLeft();
-                    else if (i == 1 && mouse.countryTarget == 3) bullet.moveRight();
-                    else if (i == 0 && mouse.countryTarget == 3) {
+                    if (bullet.getTargetCountry() == -1) bullet.setTargetCountry(mouse.countryTarget);
+                    if (i == 0 && bullet.getTargetCountry() == 2) bullet.moveRight();
+                    else if (i == 2 && bullet.getTargetCountry() == 0) bullet.moveLeft();
+                    else if (i == 0 && bullet.getTargetCountry() == 1) bullet.moveDown(0);
+                    else if (i == 1 && bullet.getTargetCountry() == 0) bullet.moveUp(0);
+                    else if (i == 3 && bullet.getTargetCountry() == 2) bullet.moveUp(0);
+                    else if (i == 2 && bullet.getTargetCountry() == 3) bullet.moveDown(0);
+                    else if (i == 3 && bullet.getTargetCountry() == 1) bullet.moveLeft();
+                    else if (i == 1 && bullet.getTargetCountry() == 3) bullet.moveRight();
+                    else if (i == 0 && bullet.getTargetCountry() == 3) {
                         bullet.moveRight();
                         bullet.moveDown(1);
                     }
-                    else if (i == 3 && mouse.countryTarget == 0) {
+                    else if (i == 3 && bullet.getTargetCountry() == 0) {
                         bullet.moveLeft();
                         bullet.moveUp(1);
                     }
-                    else if (i == 1 && mouse.countryTarget == 2) {
+                    else if (i == 1 && bullet.getTargetCountry() == 2) {
                         bullet.moveRight();
                         bullet.moveUp(1);
                     }
-                    else if (i == 2 && mouse.countryTarget == 1) {
+                    else if (i == 2 && bullet.getTargetCountry() == 1) {
                         bullet.moveLeft();
                         bullet.moveDown(2);
                     }
@@ -115,14 +117,16 @@ public class PlayState extends GameState{
                     */
                     for(int j=0; j<4; j++){
                         if (i != j && Physics.collision(bullet.getHitBox(), counteries[j].getHitBox())){
+                            bullet.setTargetCountry(-1);
                             bulletIterator.remove();
 
-                            if (alliedCountryIndex[j] == i) counteries[j].army += 1;
+                            if (counteries[j].getColor() == counteries[i].getColor()) counteries[j].army += 1;
                             else counteries[j].army -= 1;
 
                             if (counteries[j].army < 0){
                                 counteries[j].army = Math.abs(counteries[j].army);
-                                alliedCountryIndex[j] = alliedCountryIndex[i];
+//                                alliedCountryIndex[j] = alliedCountryIndex[i];
+                                counteries[j].setColor(counteries[i].getColor());
                             }
                         }
                     }
@@ -133,6 +137,19 @@ public class PlayState extends GameState{
 
 
 
-
+        /*
+        * win check
+        */
+        ArrayList<Color> colors = new ArrayList<>();
+        for(int j=0; j<4; j++){
+            if (!colors.contains(counteries[j].getColor())){
+                colors.add(counteries[j].getColor());
+            }
+        }
+        if (colors.size() == 1) {
+            finished = true;
+            gameOver = true;
+//            won =true
+        }
     }
 }

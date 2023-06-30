@@ -10,12 +10,13 @@ public class Country {
     private ArrayList<NormalBullet> bullets;
     protected int x;
     protected int y;
+    protected Color color;
     protected int army;
     public boolean isShooting = false;
-    public long LAST_SHOOT_TIME;
+    public long LAST_SHOOT_TIME = 0;
     protected transient Image image;
-    protected static final int HEIGHT = 190;
-    protected static final int WIDTH = 190;
+    protected static final int HEIGHT = 160;
+    protected static final int WIDTH = 160;
     protected Rectangle hitBox;
 
     public Country(int x,int y) {
@@ -52,6 +53,14 @@ public class Country {
 
     public void setArmy(int army) {
         this.army = army;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public  Image getImage() {

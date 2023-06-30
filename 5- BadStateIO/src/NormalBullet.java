@@ -6,6 +6,8 @@ import java.io.File;
 public class NormalBullet {
     private transient BufferedImage image;
     public static final int DAMAGE = 1;
+
+    private int targetCountry = -1;
     public static final int HEIGHT = 20;
     public static final int WIDTH = 20;
     private int x;
@@ -48,6 +50,13 @@ public class NormalBullet {
         hitBox.setLocation(getX(),getY());
     }
 
+    public int getTargetCountry() {
+        return targetCountry;
+    }
+
+    public void setTargetCountry(int targetCountry) {
+        this.targetCountry = targetCountry;
+    }
     public int getX() {
         return x;
     }

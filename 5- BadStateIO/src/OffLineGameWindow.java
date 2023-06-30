@@ -60,7 +60,6 @@ public class OffLineGameWindow extends JFrame {
 
     private void actualRender(PlayState state,Graphics2D g){
         Country[] countries = state.getCountries();
-        int[] alliedCountryIndex = state.getAlliedCountryIndex();
 
         g.clearRect(0, 0, 960, 540);
         g.drawImage(background,0,27,getWidth(),getHeight()-27,null);
@@ -70,49 +69,46 @@ public class OffLineGameWindow extends JFrame {
          * this is for rendering the countries
          */
         for(int i = 0;i<4;i++){
-            switch (alliedCountryIndex[i]) {
-                case 0 -> g.setColor(Color.BLUE); // 300x 185y
-                case 1 -> g.setColor(Color.ORANGE); // 300x 385y
-                case 2 -> g.setColor(Color.GREEN); // 700x 185y
-                case 3 -> g.setColor(Color.PINK); // 700x 385
-            }
+
+            g.setColor(countries[i].getColor());
+
+
 
 
             // drawPolygon(int[] xPoints, int[] yPoints, int numPoint); // this could make shapes with points
-            g.fillRect(countries[i].getX(), countries[i].getY(),countries[i].WIDTH,countries[i].HEIGHT);
-            g.drawImage(countries[i].getImage(),countries[i].getX(),countries[i].getY(),countries[i].WIDTH,countries[i].HEIGHT,null);
-            g.draw(countries[i].getHitBox()); //todo: hide this and make it circle
+            g.fillRect(countries[i].getX(), countries[i].getY(), Country.WIDTH, Country.HEIGHT);
+            g.drawImage(countries[i].getImage(),countries[i].getX(),countries[i].getY(), Country.WIDTH, Country.HEIGHT,null);
+            g.draw(countries[i].getHitBox());
             Font myFont = new Font("Courier", Font.BOLD,15);
             g.setFont(myFont);
             g.setColor(Color.WHITE);
-            g.drawString(String.valueOf(countries[i].getArmy()),countries[i].getX()+(countries[i].WIDTH)/2,countries[i].getY()+(countries[i].HEIGHT)/2);
+            g.drawString(String.valueOf(countries[i].getArmy()),countries[i].getX()+(Country.WIDTH)/2,countries[i].getY()+(Country.HEIGHT)/2);
 
         }
 
         /*
          * rendering the health bar
          */
-        String aliveCountries = "";
+        ArrayList<Color> colors = new ArrayList<>();
+        ArrayList<Integer> aliveCountries = new ArrayList<>();
         for(int j=0; j<4; j++){
-            if (!aliveCountries.contains(String.valueOf(alliedCountryIndex[j]))) aliveCountries += String.valueOf(alliedCountryIndex[j]);
-
+            if (!colors.contains(countries[j].getColor())){
+                colors.add(countries[j].getColor());
+                aliveCountries.add(j);
+            }
         }
-        for(int i=0; i<aliveCountries.length(); i++){
-            int indexCountry = aliveCountries.charAt(i) - '0';
+
+        for(int i=0; i<aliveCountries.size(); i++){
+            int indexCountry = aliveCountries.get(i);
             int armyTeams = 0;
             for(int j=0; j<4; j++){
-                if (alliedCountryIndex[j] == indexCountry) {
+                if (countries[j].getColor() == countries[indexCountry].getColor()) {
                     armyTeams += countries[j].army;
                 }
             }
             healthbar[i] = armyTeams;
 
-            switch (alliedCountryIndex[indexCountry]) {
-                case 0 -> g.setColor(Color.BLUE); // 300x 185y
-                case 1 -> g.setColor(Color.ORANGE); // 300x 385y
-                case 2 -> g.setColor(Color.GREEN); // 700x 185y
-                case 3 -> g.setColor(Color.PINK); // 700x 385
-            }
+            g.setColor(countries[indexCountry].getColor());
             switch (i) {
                 case 0 -> g.fillRect(300-healthbar[2], 50, (4 * healthbar[i]), 10);
                 case 1 -> g.fillRect(300-healthbar[2]+(4 * healthbar[0]), 50, (4 * healthbar[i]), 10);
@@ -135,7 +131,7 @@ public class OffLineGameWindow extends JFrame {
         if (MyMouseListener.canShoot){
             for(int i=0; i<mouse.shooterID.size(); i++){
                 countries[mouse.shooterID.get(i)].isShooting = true;
-                System.out.println(" sfs" + mouse.shooterID.get(i));
+//                System.out.println(" sfs" + mouse.shooterID.get(i));
             }
             MyMouseListener.canShoot = false;
         }
@@ -145,12 +141,8 @@ public class OffLineGameWindow extends JFrame {
             if ( countries[i].getBullets().size() > 0){
                 for(NormalBullet bullet:countries[i].getBullets()) {
 //                    System.out.println("haha f");
-                    switch (alliedCountryIndex[i]) {
-                        case 0 -> g.setColor(Color.BLUE); // 300x 185y
-                        case 1 -> g.setColor(Color.ORANGE); // 300x 385y
-                        case 2 -> g.setColor(Color.GREEN); // 700x 185y
-                        case 3 -> g.setColor(Color.PINK); // 700x 385
-                    }
+                    g.setColor(countries[i].getColor());
+
                     g.fillOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
                     g.setColor(Color.BLACK);
                     g.drawOval(bullet.getX(), bullet.getY(), NormalBullet.WIDTH, NormalBullet.HEIGHT);
