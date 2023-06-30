@@ -82,16 +82,47 @@ public class PlayState extends GameState{
             if(counteries[i].getBullets().size()>0){
                 for(Iterator<NormalBullet> bulletIterator = counteries[i].getBullets().iterator();bulletIterator.hasNext();){
                     NormalBullet bullet = bulletIterator.next();
-                    bullet.move();
+
+                    // todo: make thread for each sets of attacks
+                    if (i == 0 && mouse.countryTarget == 2) bullet.moveRight();
+                    else if (i == 2 && mouse.countryTarget == 0) bullet.moveLeft();
+                    else if (i == 0 && mouse.countryTarget == 1) bullet.moveDown(0);
+                    else if (i == 1 && mouse.countryTarget == 0) bullet.moveUp(0);
+                    else if (i == 3 && mouse.countryTarget == 2) bullet.moveUp(0);
+                    else if (i == 2 && mouse.countryTarget == 3) bullet.moveDown(0);
+                    else if (i == 3 && mouse.countryTarget == 1) bullet.moveLeft();
+                    else if (i == 1 && mouse.countryTarget == 3) bullet.moveRight();
+                    else if (i == 0 && mouse.countryTarget == 3) {
+                        bullet.moveRight();
+                        bullet.moveDown(1);
+                    }
+                    else if (i == 3 && mouse.countryTarget == 0) {
+                        bullet.moveLeft();
+                        bullet.moveUp(1);
+                    }
+                    else if (i == 1 && mouse.countryTarget == 2) {
+                        bullet.moveRight();
+                        bullet.moveUp(1);
+                    }
+                    else if (i == 2 && mouse.countryTarget == 1) {
+                        bullet.moveLeft();
+                        bullet.moveDown(2);
+                    }
+
+
+                    /*
+                    * collision
+                    */
                     for(int j=0; j<4; j++){
                         if (i != j && Physics.collision(bullet.getHitBox(), counteries[j].getHitBox())){
                             bulletIterator.remove();
 
                             if (alliedCountryIndex[j] == i) counteries[j].army += 1;
                             else counteries[j].army -= 1;
+
                             if (counteries[j].army < 0){
                                 counteries[j].army = Math.abs(counteries[j].army);
-                                alliedCountryIndex[j] = i;
+                                alliedCountryIndex[j] = alliedCountryIndex[i];
                             }
                         }
                     }

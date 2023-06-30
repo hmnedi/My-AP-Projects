@@ -27,9 +27,25 @@ public class NormalBullet {
     public BufferedImage getImage() {
         return image;
     }
-    public void move(){
+
+    public void moveRight(){
        x+=VELOCITY;
        hitBox.setLocation(getX(),getY());
+    }
+
+    public void moveLeft(){
+        x-=VELOCITY;
+        hitBox.setLocation(getX(),getY());
+    }
+
+    public void moveDown(int veloc){
+        y+=VELOCITY-veloc;
+        hitBox.setLocation(getX(),getY());
+    }
+
+    public void moveUp(int veloc){
+        y-=VELOCITY-veloc;
+        hitBox.setLocation(getX(),getY());
     }
 
     public int getX() {

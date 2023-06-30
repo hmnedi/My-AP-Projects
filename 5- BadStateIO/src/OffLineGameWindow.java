@@ -12,7 +12,6 @@ public class OffLineGameWindow extends JFrame {
     MyMouseListener mouse;
     BufferStrategy bs;
     BufferedImage background;
-    Canvas canvas;
     int[] healthbar = new int[4];
     public OffLineGameWindow() throws IOException {
         setSize(new Dimension(960,540));
