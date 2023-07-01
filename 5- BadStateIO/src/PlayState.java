@@ -1,23 +1,27 @@
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Scanner;
 
 public class PlayState extends GameState{
 
     public static Country[] counteries = new Country[4];
     public long lastPeopleUpdate;
-    public long lastMoveBullets;
+    public int enemyPlace, yourPlace;
     MyMouseListener mouse;
 
     public PlayState(MyMouseListener mouse) {
       super();
       this.mouse = mouse;
+
         counteries[0] = new Country(200, 100);
         counteries[1] = new Country(200, 300);
         counteries[2] = new Country(600, 100);
-        counteries[2].army = 2;
+//        counteries[2].army = 2;
         counteries[3] = new Country(600, 300);
 
         for(int i=0; i<4;i++){
@@ -29,6 +33,50 @@ public class PlayState extends GameState{
                 case 3 -> counteries[i].setColor(Color.PINK);
             }
         }
+
+        yourPlace = new Random().nextInt() % 4;
+        File file = new File("PlayerCountryPlace.txt");
+        Scanner sc = null;
+        try {
+            sc = new Scanner(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        if (sc.hasNext()) yourPlace = Integer.parseInt(sc.next());
+
+        file = new File("PlayerCountryColor.txt");
+        sc = null;
+        try {
+            sc = new Scanner(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        if (sc.hasNext()) {
+            String tmp = sc.next();
+            switch (tmp) {
+                case "RED" -> counteries[yourPlace].setColor(Color.RED);
+                case "CYAN" -> counteries[yourPlace].setColor(Color.CYAN);
+                case "YELLOW" -> counteries[yourPlace].setColor(Color.YELLOW);
+            }
+        }
+
+        file = new File("enemyCountryPlace.txt");
+        sc = null;
+        try {
+            sc = new Scanner(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        if (sc.hasNext()) enemyPlace = Integer.parseInt(sc.next());
+
+
+        for(int i=0; i<4;i++){
+            if (i != yourPlace && i != enemyPlace){
+                counteries[i].setColor(Color.DARK_GRAY);
+            }
+        }
+
+
         lastPeopleUpdate = System.currentTimeMillis();
       gameOver = false;
       won = false;
@@ -55,7 +103,10 @@ public class PlayState extends GameState{
             for (int i=0; i<4; i++){
                 // normal country
                 if (counteries[i] instanceof Country){
-                    counteries[i].army += 1;
+                    if (counteries[i].getColor() == Color.DARK_GRAY && counteries[i].army < 10){
+                        counteries[i].army += 1;
+                    }
+                    else if (counteries[i].getColor() != Color.DARK_GRAY) counteries[i].army += 1;
                 }
             }
             lastPeopleUpdate = System.currentTimeMillis();
@@ -148,7 +199,9 @@ public class PlayState extends GameState{
         }
         if (colors.size() == 1) {
             finished = true;
-            gameOver = true;
+            if (counteries[enemyPlace].getColor() == colors.get(0)) gameOver = true;
+            else won = true;
+
 //            won =true
         }
     }

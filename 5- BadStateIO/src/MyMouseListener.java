@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -34,21 +35,21 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             if (mouseX > 200 && mouseX < 390){
                 if (mouseY > 100 && mouseY < 245) {
 //                    System.out.println("blue");
-                    shooterID.add(0);
+                    if (PlayState.counteries[0].getColor() != Color.DARK_GRAY) shooterID.add(0);
                 }
                 if (mouseY > 300 && mouseY < 450) {
 //                    System.out.println("orange");
-                    shooterID.add(1);
+                    if (PlayState.counteries[1].getColor() != Color.DARK_GRAY) shooterID.add(1);
                 }
             }
             if (mouseX > 600 && mouseX < 770){
                 if (mouseY > 100 && mouseY < 245){
 //                    System.out.println("green");
-                    shooterID.add(2);
+                    if (PlayState.counteries[2].getColor() != Color.DARK_GRAY) shooterID.add(2);
                 }
                 if (mouseY > 300 && mouseY < 450) {
 //                    System.out.println("pink");
-                    shooterID.add(3);
+                    if (PlayState.counteries[3].getColor() != Color.DARK_GRAY) shooterID.add(3);
                 }
             }
         }
@@ -103,16 +104,16 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 if (mouseY > 100 && mouseY < 245) {
 //                    System.out.println("blue");
                     if (shooterID.get(0)!=0){
-                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[0] && !shooterID.contains(0)) shooterID.add(0);
-                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[0]) countryTarget = 0;
+                        if (PlayState.counteries[shooterID.get(0)].getColor() == PlayState.counteries[0].getColor() && !shooterID.contains(0)) shooterID.add(0);
+                        else if (PlayState.counteries[shooterID.get(0)].getColor() != PlayState.counteries[0].getColor()) countryTarget = 0;
 
                     }
                 }
                 if (mouseY > 300 && mouseY < 450) {
 //                    System.out.println("orange");
                     if (shooterID.get(0)!=1){
-                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[1] && !shooterID.contains(1)) shooterID.add(1);
-                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[1]) countryTarget = 1;
+                        if (PlayState.counteries[shooterID.get(0)].getColor() == PlayState.counteries[1].getColor() && !shooterID.contains(1)) shooterID.add(1);
+                        else if (PlayState.counteries[shooterID.get(0)].getColor() != PlayState.counteries[1].getColor()) countryTarget = 1;
 
                     }
                 }
@@ -121,15 +122,15 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 if (mouseY > 100 && mouseY < 245){
 //                    System.out.println("green");
                     if (shooterID.get(0)!=2){
-                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[2] && !shooterID.contains(2)) shooterID.add(2);
-                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[2]) countryTarget = 2;
+                        if (PlayState.counteries[shooterID.get(0)].getColor() == PlayState.counteries[2].getColor() && !shooterID.contains(2)) shooterID.add(2);
+                        else if (PlayState.counteries[shooterID.get(0)].getColor() != PlayState.counteries[2].getColor()) countryTarget = 2;
                     }
                 }
                 if (mouseY > 300 && mouseY < 450) {
 //                    System.out.println("pink");
                     if (shooterID.get(0)!=3){
-                        if (PlayState.alliedCountryIndex[shooterID.get(0)] == PlayState.alliedCountryIndex[3] && !shooterID.contains(3)) shooterID.add(3);
-                        else if (PlayState.alliedCountryIndex[shooterID.get(0)] != PlayState.alliedCountryIndex[3]) countryTarget = 3;
+                        if (PlayState.counteries[shooterID.get(0)].getColor() == PlayState.counteries[3].getColor() && !shooterID.contains(3)) shooterID.add(3);
+                        else if (PlayState.counteries[shooterID.get(0)].getColor() != PlayState.counteries[3].getColor()) countryTarget = 3;
 
                     }
                 }
